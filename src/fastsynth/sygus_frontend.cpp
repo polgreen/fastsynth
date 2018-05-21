@@ -93,8 +93,7 @@ int sygus_frontend(const cmdlinet &cmdline)
   if(cmdline.isset("neural-network"))
   {
     for(const auto &f : parser.synth_fun_set)
-      problem.synth_fun_set.push_back(
-          symbol_exprt(f, parser.function_map[f].type));
+      problem.synth_fun_set[f] = parser.function_map[f].type;
   }
 
   if(cmdline.isset("literals"))

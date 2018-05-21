@@ -5,6 +5,8 @@
 #include <map>
 
 #include <util/std_expr.h>
+#include <util/std_types.h>
+
 
 class problemt
 {
@@ -12,8 +14,10 @@ public:
   std::set<exprt> free_variables;
   exprt::operandst side_conditions, constraints;
   std::set<exprt> literals; /// Constant hints for solver.
+
+
   // needed by neural network interface, otherwise not used
-  std::vector<symbol_exprt> synth_fun_set;
+  std::map<irep_idt, mathematical_function_typet> synth_fun_set;
 };
 
 class solutiont

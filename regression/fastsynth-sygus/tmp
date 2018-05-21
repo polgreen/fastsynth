@@ -1,0 +1,1 @@
+(define-fun |synth_fun::mymax| ((x  (BitVec 32)) (y  (BitVec 32))) (BitVec 32) (ite (bvuge x y) y x))

@@ -10,6 +10,7 @@
 #include <langapi/language_util.h>
 #include <solvers/sat/satcheck.h>
 #include <util/arith_tools.h>
+#include <util/std_types.h>
 
 #include "neural_learn.h"
 #include "sygus_parser.h"
@@ -90,7 +91,10 @@ solutiont neural_learnt::dummy_program()
 {
   solutiont result;
 
-  symbol_exprt function_symbol = problem.synth_fun_set[0];
+  symbol_exprt function_symbol =
+      symbol_exprt(
+          problem.synth_fun_set.begin()->first,
+          problem.synth_fun_set.begin()->second);
   function_symbol.set_identifier(
       "synth_fun::"+id2string(function_symbol.get_identifier()));
 
@@ -104,6 +108,12 @@ solutiont neural_learnt::dummy_program()
 
 decision_proceduret::resultt neural_learnt::operator()()
 {
+  // only implemented to synthesise 1 function
+  PRECONDITION(problem.synth_fun_set.size()==1);
+  // handling beam size of greater than 1 need to be implemented
+  PRECONDITION(beam_size==1);
+
+
   if(counterexamples.size()<5u)
   {
     status() << "not enough counterexamples to call NN yet"
@@ -117,8 +127,14 @@ decision_proceduret::resultt neural_learnt::operator()()
   command="python CEGISInterface.py ";
   command+="-concatenateInputArity t"; // I have no idea what this does
   command+="-inputMode \"normBinary\" -lengthLimit 300 ";
-  command+="-aliasing \""; // name of function and function arguments
-  command+=std::to_string(beam_size); // number of programs to output
+  command+="-aliasing "; // name of function and function arguments
+  command+= " \"|synth_fun::";
+  command+= id2string(problem.synth_fun_set.begin()->first)+"|";
+
+  for(const auto &par : problem.synth_fun_set.begin()->second.domain())
+    command+=" "+id2string(par.get_identifier());
+  command+="\" ";
+  command+=std::to_string(beam_size)+ " "; // number of programs to output
 
   // inputs
   command+="[[";
@@ -167,11 +183,7 @@ std::string neural_learnt::normalise(const exprt &expr)
 {
   std::string result;
   unsigned int value = stol(from_expr(ns, "", expr));
-  std::cout<<"value "<<std::to_string(value)<<"==";
-  std::cout<<from_expr(ns, "", expr);
   double normalised = (static_cast<double>(value)/(2147483648)) - 1;
-  std::cout<<". max possible value "<< 2147483648<<" ";
-  std::cout<<"normalised "<<std::to_string(normalised)<<std::endl;
   POSTCONDITION(normalised <= 1 && normalised >= -1);
   return std::to_string(normalised);
 }

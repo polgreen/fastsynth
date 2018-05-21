@@ -165,6 +165,15 @@ int c_frontend(const cmdlinet &cmdline)
 
   PRECONDITION(cmdline.args.size()==1);
 
+  if(cmdline.isset("generate-N-programs") ||
+      cmdline.isset("seed") ||
+      cmdline.isset("neural-network"))
+  {
+    message.error() << "neural network options cannot be used with the C front end"
+                    << messaget::eom;
+    return 0;
+  }
+
   goto_modelt goto_model;
 
   try

@@ -23,6 +23,7 @@
    "(enumerative-solver)" \
    "(number-of-constants):" \
    "(seed):" \
+   "(neural-network)" \
 
 int main(int argc, const char *argv[])
 {

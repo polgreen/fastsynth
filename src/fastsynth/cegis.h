@@ -34,6 +34,7 @@ public:
 
   std::size_t max_program_size;
   bool enumerative_engine;
+  bool neural_network;
   bool incremental_solving;
   bool use_simp_solver;
   bool use_fm;

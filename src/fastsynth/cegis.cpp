@@ -5,6 +5,7 @@
 #include "fm_verify.h"
 #include "enumerative_learn.h"
 #include <langapi/language_util.h>
+#include "neural_learn.h"
 
 #include <util/simplify_expr.h>
 
@@ -42,6 +43,12 @@ decision_proceduret::resultt cegist::operator()(
    status() << "** enumerative engine" << eom;
    learner=std::unique_ptr<learnt>(new enumerative_learnt(
        ns, problem, get_message_handler()));
+  }
+  else if(neural_network)
+  {
+    status() << "** neural network learner " << eom;
+    learner=std::unique_ptr<learnt>(
+        new neural_learnt(ns, problem, get_message_handler()));
   }
   else
   {

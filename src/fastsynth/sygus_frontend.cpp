@@ -76,6 +76,7 @@ int sygus_frontend(const cmdlinet &cmdline)
   cegis.use_smt=cmdline.isset("smt");
   cegis.enable_division=cmdline.isset("enable-division");
   cegis.logic=parser.logic;
+  cegis.neural_network=cmdline.isset("neural-network");
 
   problemt problem;
   problem.constraints=parser.constraints;
@@ -83,11 +84,18 @@ int sygus_frontend(const cmdlinet &cmdline)
   for(const auto &v : parser.variable_map)
     problem.free_variables.insert(symbol_exprt(v.first, v.second));
 
-  for(const auto &v: parser.full_let_variable_map)
+  for(const auto &v : parser.full_let_variable_map)
     problem.free_variables.insert(symbol_exprt(v.first, v.second));
 
   for(auto &c : problem.constraints)
     parser.expand_function_applications(c);
+
+  if(cmdline.isset("neural-network"))
+  {
+    for(const auto &f : parser.synth_fun_set)
+      problem.synth_fun_set.push_back(
+          symbol_exprt(f, parser.function_map[f].type));
+  }
 
   if(cmdline.isset("literals"))
     problem.literals=find_literals(problem);

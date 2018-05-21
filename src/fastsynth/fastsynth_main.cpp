@@ -4,6 +4,7 @@
 #include <util/cmdline.h>
 
 #include "c_frontend.h"
+#include "program_generator_frontend.h"
 #include "sygus_frontend.h"
 #include "smt2_frontend.h"
 
@@ -17,6 +18,11 @@
    "(smt)" \
    "(literals)" \
    "(enable-division)" \
+   "(generate-N-programs):" \
+   "(program-size):" \
+   "(enumerative-solver)" \
+   "(number-of-constants):" \
+   "(seed):" \
 
 int main(int argc, const char *argv[])
 {
@@ -29,7 +35,21 @@ int main(int argc, const char *argv[])
 
   if(cmdline.args.size()!=1)
   {
-    std::cerr << "Usage error\n";
+    std::cerr << "Usage error, file must be given\n";
+    return 1;
+  }
+
+  if(cmdline.isset("generate-N-programs"))
+  {
+    if(has_suffix(cmdline.args.back(), ".sl"))
+    {
+      std::cout<<"Generating random programs \n";
+      generate_programs(cmdline, std::stol(
+          cmdline.get_value("generate-N-programs")));
+      return 0;
+      }
+     else
+      std::cerr<<"Error: generate programs must be given .sl file\n";
     return 1;
   }
 

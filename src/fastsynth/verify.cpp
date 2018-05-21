@@ -29,6 +29,7 @@ decision_proceduret::resultt verifyt::operator()(
 
   verify_encodingt verify_encoding;
   verify_encoding.functions=solution.functions;
+  output(verify_encoding.functions, debug());
   verify_encoding.free_variables=problem.free_variables;
 
   add_problem(verify_encoding, solver);
@@ -47,6 +48,7 @@ void verifyt::add_problem(
   verify_encodingt &verify_encoding,
   decision_proceduret &solver)
 {
+  debug() << "verify: add problem" << eom;
   for(const auto &e : problem.side_conditions)
   {
     const exprt encoded=verify_encoding(e);

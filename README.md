@@ -14,12 +14,8 @@ git clone https://github.com/diffblue/cbmc.git .
 
 git checkout develop
 
-cd src
+compile CBMC by following these instructions: http://www.cprover.org/svn/cbmc/trunk/COMPILING
 
-make minisat2-download
-
-make -j8
-
-cd ../../../src
+navigate to directory fastsynth/src
 
 make -j8

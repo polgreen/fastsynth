@@ -114,6 +114,11 @@ decision_proceduret::resultt cegist::loop(
 
         if(old_functions==solution.functions && !neural_network)
         {
+          status()<<"size of old functions "<<old_functions.size()<<eom;
+          for(const auto &expr: old_functions)
+            status()<< from_expr(ns, "", expr.first)<<" "
+                    << from_expr(ns, "", expr.second)<<eom;
+
           error() << "NO PROGRESS MADE" << eom;
           return decision_proceduret::resultt::D_ERROR;
         }

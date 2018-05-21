@@ -112,7 +112,7 @@ int generate_programs(const cmdlinet &cmdline, std::size_t number_of_programs)
         cmdline.get_value("program-size"));
   else
     message.warning() << "no program size given, "
-                      <<"generating all possible programs for default size 5"
+                      <<"generating programs for default size 5"
                       << messaget::eom;
 
 

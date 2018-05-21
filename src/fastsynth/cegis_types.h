@@ -12,8 +12,10 @@ public:
   std::set<exprt> free_variables;
   exprt::operandst side_conditions, constraints;
   std::set<exprt> literals; /// Constant hints for solver.
+  // needed by neural network interface, otherwise not used
+  std::vector<symbol_exprt> synth_fun_set;
 };
-  
+
 class solutiont
 {
 public:

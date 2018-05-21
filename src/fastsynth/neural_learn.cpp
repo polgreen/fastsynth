@@ -4,7 +4,7 @@
  *  Created on: 13 May 2018
  *      Author: elipol
  */
-#define DEBUG_CMD
+//#define DEBUG_CMD
 
 #include <solvers/smt2/smt2irep.h>
 #include <langapi/language_util.h>
@@ -124,12 +124,12 @@ decision_proceduret::resultt neural_learnt::operator()()
   }
 
   // construct command line outpute
-  command="python CEGISInterface.py ";
-  command+="-concatenateInputArity t"; // I have no idea what this does
+  command="python ~/deepsynth/Python/CEGISInterface.py ";
+  command+="-concatenateInputArity t "; // I have no idea what this does
   command+="-inputMode \"normBinary\" -lengthLimit 300 ";
   command+="-aliasing "; // name of function and function arguments
-  command+= " \"|synth_fun::";
-  command+= id2string(problem.synth_fun_set.begin()->first)+"|";
+  command+= " \"";
+  command+= id2string(problem.synth_fun_set.begin()->first)+" ";
 
   for(const auto &par : problem.synth_fun_set.begin()->second.domain())
     command+=" "+id2string(par.get_identifier());
@@ -137,14 +137,14 @@ decision_proceduret::resultt neural_learnt::operator()()
   command+=std::to_string(beam_size)+ " "; // number of programs to output
 
   // inputs
-  command+="[[";
+  command+="\"[[";
   for(const auto &s : input_examples)
-    command+="[ "+ s +" ]";
+    command+="["+ s +"]";
 
-  command+="]]";
+  command+="]]\" ";
 
   // outputs
-  command+="[[["+ output_examples+"]]]";
+  command+="\"[[["+ output_examples+"]]]\"";
 
   command += " > ";
   command += tmp_results_filename;
@@ -217,7 +217,7 @@ void neural_learnt::add_ce(const counterexamplet & cex)
   for(const auto &it:
       encoding.get_output_example(output_generator).assignment)
   {
-    output_examples+=normalise(it.second)+", ";
+    output_examples+=normalise(it.second)+" ";
   }
   debug() <<"output examples: "<< output_examples << eom;
 }

@@ -112,7 +112,7 @@ decision_proceduret::resultt cegist::loop(
         for(auto &f : solution.functions)
           f.second=simplify_expr(f.second, ns);
 
-        if(old_functions==solution.functions)
+        if(old_functions==solution.functions && !neural_network)
         {
           error() << "NO PROGRESS MADE" << eom;
           return decision_proceduret::resultt::D_ERROR;

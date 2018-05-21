@@ -81,6 +81,12 @@ protected:
   /// \param counterexample new counterexample
   virtual void add_ce(const counterexamplet &);
 
+  /// normalise the value of an expr to a double between -1 and 1
+  /// and return a string to append to the commands
+  /// \param N expr value to be normalised
+  /// \return string with value between -1 and 1
+  std::string normalise(const exprt &expr);
+
   /// Does nothing. Program size is not currently used by the neural network
   virtual void set_program_size(size_t program_size)
   {

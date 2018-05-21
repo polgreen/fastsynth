@@ -15,6 +15,7 @@
 #include "sygus_parser.h"
 
 #include <fstream>
+#include <limits>
 
 neural_learnt::neural_learnt(
     const namespacet &_ns,
@@ -112,9 +113,15 @@ decision_proceduret::resultt neural_learnt::operator()()
     return decision_proceduret::resultt::D_SATISFIABLE;
   }
 
-  // construct command line output
+  // construct command line outpute
+  command="python CEGISInterface.py ";
+  command+="-concatenateInputArity t"; // I have no idea what this does
+  command+="-inputMode \"normBinary\" -lengthLimit 300 ";
+  command+="-aliasing \""; // name of function and function arguments
+  command+=std::to_string(beam_size); // number of programs to output
+
   // inputs
-  command="[[";
+  command+="[[";
   for(const auto &s : input_examples)
     command+="[ "+ s +" ]";
 
@@ -132,6 +139,7 @@ decision_proceduret::resultt neural_learnt::operator()()
 
 
 #ifdef DEBUG_CMD
+  status() << "original command: " << command << eom;
   command="echo \"(define-fun |synth_fun::mymax| ((x  (BitVec 32)) (y  (BitVec 32))) (BitVec 32) (ite (bvuge x y) y x))\"";
   command+= "> " + tmp_results_filename;
 #endif
@@ -154,6 +162,20 @@ solutiont neural_learnt::get_solution() const
   return last_solution;
 }
 
+#include <iostream>
+std::string neural_learnt::normalise(const exprt &expr)
+{
+  std::string result;
+  unsigned int value = stol(from_expr(ns, "", expr));
+  std::cout<<"value "<<std::to_string(value)<<"==";
+  std::cout<<from_expr(ns, "", expr);
+  double normalised = (static_cast<double>(value)/(2147483648)) - 1;
+  std::cout<<". max possible value "<< 2147483648<<" ";
+  std::cout<<"normalised "<<std::to_string(normalised)<<std::endl;
+  POSTCONDITION(normalised <= 1 && normalised >= -1);
+  return std::to_string(normalised);
+}
+
 void neural_learnt::add_ce(const counterexamplet & cex)
 {
   counterexamples.emplace_back(cex);
@@ -165,9 +187,9 @@ void neural_learnt::add_ce(const counterexamplet & cex)
     const exprt &value = it.second;
 // add input to command
     if(input_examples.size()<=index)
-      input_examples.push_back(from_expr(ns, "", it.second)+", ");
+      input_examples.push_back(normalise(it.second));
     else
-      input_examples[index]+=from_expr(ns, "", it.second)+", ";
+      input_examples[index]+=" "+normalise(it.second);
     debug() << "input examples: "<< input_examples[index] << eom;
     index++;
 
@@ -183,7 +205,7 @@ void neural_learnt::add_ce(const counterexamplet & cex)
   for(const auto &it:
       encoding.get_output_example(output_generator).assignment)
   {
-    output_examples+=from_expr(ns, "", it.second)+", ";
+    output_examples+=normalise(it.second)+", ";
   }
   debug() <<"output examples: "<< output_examples << eom;
 }

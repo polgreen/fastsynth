@@ -1,8 +1,7 @@
 #include "verify_encoding.h"
 
 #include <util/arith_tools.h>
-
-//#include <langapi/language_util.h>
+#include <langapi/language_util.h>
 
 exprt verify_encodingt::operator()(const exprt &expr) const
 {
@@ -11,7 +10,7 @@ exprt verify_encodingt::operator()(const exprt &expr) const
     const auto &e=to_function_application_expr(expr);
 
     auto f_it=functions.find(e.function());
-    
+
     exprt result=f_it==functions.end()?
       from_integer(0, e.type()):f_it->second;
 

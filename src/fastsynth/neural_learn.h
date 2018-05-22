@@ -8,6 +8,8 @@
 #ifndef CPROVER_FASTSYNTH_NEURAL_LEARN_H
 #define CPROVER_FASTSYNTH_NEURAL_LEARN_H
 
+#include <memory>
+
 #include <fastsynth/solver_learn.h>
 #include <util/message.h>
 #include <solvers/flattening/bv_pointers.h>

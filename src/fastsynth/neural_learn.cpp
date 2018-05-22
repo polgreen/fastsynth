@@ -17,43 +17,54 @@
 
 #include <fstream>
 #include <limits>
+#include <random>
+#include <sstream>
+#include <iomanip>
 
 neural_learnt::neural_learnt(
     const namespacet &_ns,
     const problemt &_problem,
     message_handlert &_mh):
     solver_learn_baset(_ns, _problem, _mh),
-    output_generator(_ns, *new satcheck_no_simplifiert()),
-    message_handler(_mh),
+    generator_satcheck(new satcheckt()),
+    output_generator(new bv_pointerst(_ns, *generator_satcheck)),
     tmp_results_filename("tmp"),
     beam_size(1u),
     dummy_program_return_constant(0)
 {
     PRECONDITION(problem.synth_fun_set.size()==1);
-    construct_output_generator(_problem);
+    construct_output_generator();
+    std::random_device rd;
+    seed = rd();
 }
 
+void neural_learnt::reset_output_generator()
+{
+  generator_satcheck.reset(new satcheckt());
+  output_generator.reset(new bv_pointerst(ns, *generator_satcheck));
+  encoding.constraints.clear();
+  encoding.function_outputs.clear();
+  construct_output_generator();
+}
 
-
-void neural_learnt::construct_output_generator(
-    const problemt &problem)
+void neural_learnt::construct_output_generator()
 {
   debug() << "construct output generator for neural network" << eom;
   for(const auto &e : problem.side_conditions)
   {
     const exprt encoded = encoding(e);
-    output_generator.set_to_true(encoded);
+    output_generator->set_to_true(encoded);
   }
 
   for(const auto &e : problem.constraints)
   {
     const exprt encoded = encoding(e);
-    output_generator.set_to_true(encoded);
+    output_generator->set_to_true(encoded);
   }
 
   for(const auto &c : encoding.constraints)
   {
-    output_generator.set_to_true(c);
+    output_generator->set_to_true(c);
     debug() << "ec: " << from_expr(ns, "", c) << eom;
   }
 }
@@ -68,7 +79,7 @@ decision_proceduret::resultt neural_learnt::read_result(std::istream &in)
   valuest values;
 
   sygus_parsert parser(in);
-  parser.set_message_handler(message_handler);
+  parser.set_message_handler(get_message_handler());
 
   parser.parse();
 
@@ -106,6 +117,7 @@ solutiont neural_learnt::dummy_program()
   return result;
 }
 
+
 decision_proceduret::resultt neural_learnt::operator()()
 {
   // only implemented to synthesise 1 function
@@ -114,13 +126,19 @@ decision_proceduret::resultt neural_learnt::operator()()
   PRECONDITION(beam_size==1);
 
 
-  if(counterexamples.size()<5u)
+  if(counterexamples.size()<1u)
   {
-    status() << "not enough counterexamples to call NN yet"
+    status() << "No counterexamples yet"
               << ", returning dummy program\n";
     // return empty program and get more counterexamples;
     last_solution=dummy_program();
     return decision_proceduret::resultt::D_SATISFIABLE;
+  }
+  else if(counterexamples.size()==1u)
+  {
+    status() << "Only 1 counterexample. Generating "
+             << "more random input/output examples\n";
+    add_random_ces(counterexamples.back(), 4u);
   }
 
   // construct command line outpute
@@ -129,7 +147,7 @@ decision_proceduret::resultt neural_learnt::operator()()
   command+="-inputMode \"normBinary\" -lengthLimit 300 ";
   command+="-aliasing "; // name of function and function arguments
   command+= " \"";
-  command+= id2string(problem.synth_fun_set.begin()->first)+" ";
+  command+= id2string(problem.synth_fun_set.begin()->first);
 
   for(const auto &par : problem.synth_fun_set.begin()->second.domain())
     command+=" "+id2string(par.get_identifier());
@@ -178,14 +196,38 @@ solutiont neural_learnt::get_solution() const
   return last_solution;
 }
 
-#include <iostream>
+
+
 std::string neural_learnt::normalise(const exprt &expr)
 {
   std::string result;
+  std::stringstream convert;
   unsigned int value = stol(from_expr(ns, "", expr));
   double normalised = (static_cast<double>(value)/(2147483648)) - 1;
+  convert << std::setprecision(32)<<normalised;
   POSTCONDITION(normalised <= 1 && normalised >= -1);
-  return std::to_string(normalised);
+  return convert.str();
+}
+
+
+void neural_learnt::add_random_ces(const counterexamplet &c, std::size_t n)
+{
+  std::mt19937 gen(seed);
+  counterexamplet cex = c;
+  for(std::size_t i=0; i<n; i++)
+  {
+    counterexamplet random_cex;
+    for(const auto &it : cex.assignment)
+    {
+      std::uniform_int_distribution<>dis(
+          0, std::numeric_limits<char32_t>::max());
+      const exprt &symbol = it.first;
+      mp_integer number = dis(gen);
+      constant_exprt value(integer2binary(number, 32), unsignedbv_typet(32));
+      random_cex.assignment[symbol] = value;
+    }
+    add_ce(random_cex);
+  }
 }
 
 void neural_learnt::add_ce(const counterexamplet & cex)
@@ -199,28 +241,27 @@ void neural_learnt::add_ce(const counterexamplet & cex)
     const exprt &value = it.second;
 // add input to command
     if(input_examples.size()<=index)
-      input_examples.push_back(normalise(it.second));
+      input_examples.push_back(normalise(value));
     else
-      input_examples[index]+=" "+normalise(it.second);
-    debug() << "input examples: "<< input_examples[index] << eom;
+      input_examples[index]+=" "+normalise(value);
     index++;
 
 // add input to solver
     exprt encoded = encoding(equal_exprt(symbol, value));
-    debug() << "ce: " << from_expr(ns, "", encoded) << eom;
-    output_generator.set_to_true(encoded);
+    output_generator->set_to_true(encoded);
   }
 // get output
-  POSTCONDITION(output_generator()!=decision_proceduret::resultt::D_ERROR);
+  POSTCONDITION(output_generator->operator ()()!=
+      decision_proceduret::resultt::D_ERROR);
 
   // add output to command;
-  for(const auto &it:
-      encoding.get_output_example(output_generator).assignment)
+  for(const auto &o_it:
+      encoding.get_output_example(*output_generator).assignment)
   {
-    output_examples+=normalise(it.second)+" ";
+    output_examples+=normalise(o_it.second)+" ";
   }
+  for(const auto &s : input_examples)
+    debug() << "inputs: " << s << eom;
   debug() <<"output examples: "<< output_examples << eom;
 }
-
-
 

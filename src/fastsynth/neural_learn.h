@@ -32,8 +32,11 @@ public:
     message_handlert &_mh);
 
 protected:
-  // solver_instance used to generate output examples
-  bv_pointerst output_generator;
+  /// Solver instance.
+  std::unique_ptr<propt> generator_satcheck;
+
+  /// Solver used to generate output examples.
+  std::unique_ptr<class bv_pointerst> output_generator;
 
   std::vector<counterexamplet> counterexamples;
   solutiont last_solution;
@@ -42,8 +45,8 @@ protected:
   std::string command;
   std::vector<std::string> input_examples;
   std::string output_examples;
+  int seed; // seed for random counterexample generator
 
-  message_handlert &message_handler;
   std::string tmp_results_filename;
 
   /// beam size parameter for neural network; corresponds to the number of
@@ -54,10 +57,21 @@ protected:
 
   /// returns a dummy program for use when we don't have enough counterexamples
   /// to make it worth firing up the neural network.
-  /// The program returned returns the dummy_program_return_constant
+  /// The program returned returns the dummy_program_return_constant. Typically
+  /// only used once, in order to generate the first counterexample. We then use
+  /// add_random_ces to generate more input/output pairs based on that counterexample.
   /// \return solutiont dummy program
   solutiont dummy_program();
   int dummy_program_return_constant;
+
+  /// generates random input/output examples for use when we
+  /// don't have enough counterexamples to make it worth firing up the neural
+  /// network. Requires a counterexample as input to base the random
+  /// input/output examples on (we take the structure of the counterexample
+  /// and replace the values with randomly generated values
+  /// \param cex counterexample to base input/output pairs on
+  /// \param n number of input/output pairs to add
+  void add_random_ces(const counterexamplet &cex, std::size_t n);
 
   /// reads the result from the neural network, writes the solution to
   /// last_solution, and returns SAT if a solution is correctly read in.
@@ -95,9 +109,11 @@ protected:
 
   /// Sets up the solver used to generate the output examples for each
   /// input counterexample
-  /// \param problem synthesis problem
-  void construct_output_generator(
-      const problemt &problem);
+  void construct_output_generator();
+
+  /// reset the solver used to generate the output examples for each
+  /// input counterexample
+  void reset_output_generator();
 };
 
 #endif /* CPROVER_FASTSYNTH_NEURAL_LEARN_H */

@@ -28,6 +28,7 @@ neural_learnt::neural_learnt(
     solver_learn_baset(_ns, _problem, _mh),
     generator_satcheck(new satcheckt()),
     output_generator(new bv_pointerst(_ns, *generator_satcheck)),
+    seed(0u),
     tmp_results_filename("tmp"),
     beam_size(1u),
     dummy_program_return_constant(0)

@@ -17,6 +17,45 @@ void verifyt::output(
 }
 
 decision_proceduret::resultt verifyt::operator()(
+    solutiont &solution, std::vector<counterexamplet> &counterexamples)
+{
+  output(solution.functions, debug());
+  debug() << eom;
+
+  for(const auto &c : counterexamples)
+  {
+    // for each counterexample, creates a solver and checks whether there is
+    // an assignment that triggers the assertion for that cex.
+    // TODO: do this with solving under assumptions to avoid constructing
+    // the solver multiple times
+    solvert solver_container(use_smt, logic, ns, get_message_handler());
+    auto &solver = solver_container.get();
+
+    verify_encodingt verify_encoding;
+    verify_encoding.functions = solution.functions;
+    output(verify_encoding.functions, debug());
+    verify_encoding.free_variables = problem.free_variables;
+
+    add_problem(verify_encoding, solver);
+
+    for(const auto &it : c.assignment)
+    {
+      const exprt &symbol = it.first;
+      const exprt &value = it.second;
+
+      exprt encoded = verify_encoding(equal_exprt(symbol, value));
+      debug() << "ce: " << from_expr(ns, "", encoded) << eom;
+      solver.set_to_true(encoded);
+    }
+    if(solver() == decision_proceduret::resultt::D_SATISFIABLE)
+      return decision_proceduret::resultt::D_SATISFIABLE;
+  }
+
+  return decision_proceduret::resultt::D_UNSATISFIABLE;
+}
+
+
+decision_proceduret::resultt verifyt::operator()(
   solutiont &solution)
 {
   output(solution.functions, debug());

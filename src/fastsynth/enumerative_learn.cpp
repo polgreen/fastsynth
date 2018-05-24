@@ -6,6 +6,7 @@
  */
 
 #include "enumerative_learn.h"
+#include "verify.h"
 #include <solvers/smt2/smt2_conv.h>
 #include <solvers/flattening/bv_pointers.h>
 #include <solvers/sat/satcheck.h>
@@ -61,6 +62,8 @@ void enumerative_learnt::add_ce(const counterexamplet &cex)
   counterexamples.emplace_back(cex);
 }
 
+
+
 decision_proceduret::resultt enumerative_learnt::operator()()
 {
   synth_encodingt synth_encoding;
@@ -74,71 +77,36 @@ decision_proceduret::resultt enumerative_learnt::operator()()
   synth_encoding_verif.enable_bitwise = enable_bitwise;
   synth_encoding_verif.literals = problem.literals;
 
-  satcheckt satcheck;
-      satcheck.set_message_handler(get_message_handler());
+  verifyt solution_verifier(ns, problem, get_message_handler());
+  synth_encoding.suffix = "$ce";
+  synth_encoding.constraints.clear();
 
-  bv_pointerst verifier(ns, satcheck);
-  verifier.set_message_handler(get_message_handler());
+  add_problem(synth_encoding, solver);
 
-
-  if(counterexamples.empty())
-  {
-    synth_encoding.suffix = "$ce";
-    synth_encoding.constraints.clear();
-
-    synth_encoding_verif.suffix = "$ce";
-    synth_encoding_verif.constraints.clear();
-
-
-    add_problem(synth_encoding, solver);
-    add_problem(synth_encoding_verif, verifier);
-  }
-  else
-  {
-    std::size_t counter = 0;
-    for(const auto &c : counterexamples)
-    {
-      synth_encoding_verif.suffix = "$ce"+ std::to_string(counter);
-      synth_encoding_verif.constraints.clear();
-
-      add_counterexample(c, synth_encoding_verif, verifier);
-
-      add_problem(synth_encoding_verif, verifier);
-      counter++;
-    }
-  }
   solver.find_variables(synth_encoding);
-  bool solution_found=false;
 
-  while(!solution_found)
+  while(program_index <=solver.number_of_options)
   {
-    if(program_index > solver.number_of_options)
-      return decision_proceduret::resultt::D_UNSATISFIABLE;
     solver.generate_nth_assignment(program_index);
     std::cout << "program index " << program_index
         << " program size " << program_size<<std::endl;
     program_index++;
-    std::cout<<"print synth assignment\n";
-    solver.print_assignment(std::cout);
 
-    for(auto &v : solver.assignment)
+    solutiont test_solution = synth_encoding.get_solution(solver);
+    if(solution_verifier(test_solution, counterexamples) ==
+        decision_proceduret::resultt::D_SATISFIABLE)
     {
-      if(v.second.id()==ID_constant)
-      {
-        std::cout<<"setting to true "<< from_expr(ns, "", v.first)<<std::endl;
-        verifier.set_to(v.first, to_constant_expr(v.second).is_true());
-      }
+      output_program(test_solution, std::cout);
+      std::cout<<"not a solution\n";
     }
-
-    if(verifier()==decision_proceduret::resultt::D_SATISFIABLE)
+    else
     {
-      std::cout<<"verified correct\n";
-      last_solution = synth_encoding.get_solution(verifier);
-      verifier.print_assignment(std::cout);
-      output_program(last_solution, std::cout);
-
+      output_program(test_solution, std::cout);
+      last_solution  = test_solution;
+      std::cout<<"is a solution\n";
       return decision_proceduret::resultt::D_SATISFIABLE;
     }
+
   }
   return decision_proceduret::resultt::D_UNSATISFIABLE;
 }

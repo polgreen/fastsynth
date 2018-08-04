@@ -1242,8 +1242,17 @@ typet sygus_parsert::sort()
       return nil_typet();
     }
 
-    if(buffer=="BitVec")
+    if(buffer=="BitVec" || buffer=="_")
     {
+      if(buffer=="_")
+      {
+        // indexed identifier
+        if(next_token()!=SYMBOL)
+        {
+          error() << "expected symbol after '_' in a sort" << eom;
+          return nil_typet();
+        }
+      }
       // this has slightly different symtax compared to SMT-LIB2
       if(next_token()!=NUMERAL)
       {

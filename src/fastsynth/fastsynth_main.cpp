@@ -21,10 +21,14 @@
    "(enable-division)" \
    "(generate-N-programs):" \
    "(program-size):" \
+   "(enumerative-solver)" \
    "(number-of-constants):" \
    "(seed):" \
+   "(neural-network)" \
    "(generate-N-programs-old):" \
    "(number-of-params):" \
+   "(beam-size):" \
+
 void help(std::ostream &out)
 {
   // clang-format off
@@ -132,3 +136,4 @@ int main(int argc, const char *argv[])
     std::cerr << "Error: " << s << '\n';
   }
 }
+

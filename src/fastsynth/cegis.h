@@ -16,11 +16,14 @@ class cegist:public messaget
 public:
   // constructor
   explicit cegist(const namespacet &_ns):
-    max_program_size(0),
+    max_program_size(5u),
+    beam_size(1u),
+    enumerative_engine(false),
     incremental_solving(false),
     use_simp_solver(false),
     use_fm(false),
     enable_bitwise(false),
+    enable_division(false),
     use_smt(false),
     logic("BV"),
     ns(_ns)
@@ -32,6 +35,9 @@ public:
   decision_proceduret::resultt operator()(const problemt &);
 
   std::size_t max_program_size;
+  std::size_t beam_size;
+  bool enumerative_engine;
+  bool neural_network;
   bool incremental_solving;
   bool use_simp_solver;
   bool use_fm;

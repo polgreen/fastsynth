@@ -3,8 +3,9 @@
 #include "solver_learn.h"
 #include "verify.h"
 #include "fm_verify.h"
-
+#include "enumerative_learn.h"
 #include <langapi/language_util.h>
+#include "neural_learn.h"
 
 #include <util/simplify_expr.h>
 
@@ -18,14 +19,16 @@ decision_proceduret::resultt cegist::operator()(
 
   if((incremental_solving || use_simp_solver) && use_smt)
   {
-    warning() << "WARNING: unable to use smt back end and incremental solving together\n"
+    warning() << "WARNING: unable to use smt back end and "
+              << "incremental solving together\n"
               << "Using smt only" << eom;
     incremental_solving=false;
     use_simp_solver=false;
   }
   if(logic=="LIA")
   {
-    warning() << "WARNING: Linear Integer Arithmetic requires SMT backend. Using SMT back end" << eom;
+    warning() << "WARNING: Linear Integer Arithmetic requires SMT backend. "
+              << "Using SMT back end" << eom;
     use_smt=true;
     use_simp_solver=false;
     incremental_solving=false;
@@ -36,6 +39,18 @@ decision_proceduret::resultt cegist::operator()(
     status() << "** incremental CEGIS" << eom;
     learner=std::unique_ptr<learnt>(new incremental_solver_learnt(
       ns, problem, use_simp_solver, get_message_handler()));
+  }
+  else if(enumerative_engine)
+  {
+    status() << "** enumerative engine" << eom;
+    learner=std::unique_ptr<learnt>(new enumerative_learnt(
+       ns, problem, get_message_handler()));
+  }
+  else if(neural_network)
+  {
+    status() << "** neural network learner " << eom;
+    learner=std::unique_ptr<learnt>(
+        new neural_learnt(ns, problem, get_message_handler(), beam_size));
   }
   else
   {
@@ -76,6 +91,7 @@ decision_proceduret::resultt cegist::loop(
   unsigned iteration=0;
 
   std::size_t program_size=1;
+  std::vector<counterexamplet> counterexamples;
 
   // now enter the CEGIS loop
   while(true)
@@ -99,7 +115,7 @@ decision_proceduret::resultt cegist::loop(
         for(auto &f : solution.functions)
           f.second=simplify_expr(f.second, ns);
 
-        if(old_functions==solution.functions)
+        if(old_functions==solution.functions && !neural_network)
         {
           error() << bold() << "NO PROGRESS MADE" << reset() << eom;
           return decision_proceduret::resultt::D_ERROR;
@@ -130,6 +146,9 @@ decision_proceduret::resultt cegist::loop(
     {
     case decision_proceduret::resultt::D_SATISFIABLE: // counterexample
       status() << "** Verification failed" << eom;
+
+      if(neural_network)
+        counterexamples.push_back(verify.get_counterexample());
       learn.add_ce(verify.get_counterexample());
       break;
 
@@ -140,6 +159,12 @@ decision_proceduret::resultt cegist::loop(
       return decision_proceduret::resultt::D_SATISFIABLE;
 
     case decision_proceduret::resultt::D_ERROR:
+      if(neural_network)
+      {
+        warning() << "No more counterexamples available,"
+             << "continuing analysis anyway" << eom;
+        break;
+      }
       return decision_proceduret::resultt::D_ERROR;
     }
   }

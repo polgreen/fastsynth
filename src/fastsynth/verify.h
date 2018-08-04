@@ -7,7 +7,7 @@
 class decision_proceduret;
 
 /// verify a candidate solution
-class verifyt:public messaget
+class verifyt : public messaget
 {
 public:
   verifyt(
@@ -23,7 +23,27 @@ public:
   /// Check a new candidate.
   /// \return \see decision_proceduret::resultt
   virtual decision_proceduret::resultt operator()(solutiont &);
-    
+
+  /// Check a new candidate is valid for a subset of counterexamples
+  /// \param solution solution to check
+  /// \param counterexamples vector of counterexamples to check
+  /// the solution is valid for
+  /// \return the number of satisfied counterexamples
+  std::size_t operator()(
+      solutiont &solution, std::vector<counterexamplet> &counterexamples);
+
+  /// Check a new candidate and produce a counterexample that
+  /// is definitely different to the previous counterexamples
+  /// \param solution solution to check
+  /// \param counterexamples vector of counterexamples received previously
+  /// \param force_new_cex if set to true, forces verifier to generate new cex,
+  /// otherwise behaves like standard verifier
+  /// \return \see decision_proceduret::resultt
+  decision_proceduret::resultt operator()(
+      solutiont &solution, std::vector<counterexamplet> &counterexamples,
+      bool force_new_cex);
+
+
   const counterexamplet &get_counterexample() const
   {
     return counterexample;

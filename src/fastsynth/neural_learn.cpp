@@ -94,19 +94,14 @@ decision_proceduret::resultt neural_learnt::read_result
     typedef std::unordered_map<irep_idt, irept> valuest;
     valuest values;
     std::istringstream str(line);
+
+    try{
     sygus_parsert parser(str);
     parser.set_message_handler(get_message_handler());
-
     parser.parse();
 
-    // continue if parser has failed
-    if(!parser || parser.function_map.empty())
-    {
-      warning() << "Network generated a syntactically incorrect program"
-          << " or failed to generate programs" << eom;
-    }
-    else
-    {
+    if(parser && !parser.function_map.empty())
+    { 
       // add exprt tree to functions
       PRECONDITION(parser.function_map.size() == 1);
       for(const auto & f : parser.function_map)
@@ -115,7 +110,15 @@ decision_proceduret::resultt neural_learnt::read_result
             f.second.body;
       }
       stock_solutions.push(last_solution);
+     } 
     }
+    catch(...)
+    {
+        // continue if parser has failed
+      warning() << "Network generated a syntactically incorrect program"
+          << " or failed to generate programs" << eom;
+    }
+
   }
 
   if(pre_verify_batch)
@@ -124,11 +127,12 @@ decision_proceduret::resultt neural_learnt::read_result
 	std::size_t satisfied_inputs=0;
     while(stock_solutions.size()>0)
     {
+     try{
       std::size_t new_satisfied_inputs =
           verifier(stock_solutions.front(), counterexamples);
       status() << "Solution " << stock_solutions.size() << " satisfied "
                 << new_satisfied_inputs << " inputs " << eom;
-
+                
       if (new_satisfied_inputs > satisfied_inputs) {
         best_solution_so_far = stock_solutions.front();
         satisfied_inputs = new_satisfied_inputs;
@@ -137,6 +141,12 @@ decision_proceduret::resultt neural_learnt::read_result
         std::queue<solutiont>().swap(stock_solutions);
       else
         stock_solutions.pop();
+      }
+      catch(...)
+      {
+       status() << "Failed to parse; discarding solution " << stock_solutions.size() << eom;
+       stock_solutions.pop();
+      }
     }
     last_solution = best_solution_so_far;
   }
@@ -339,18 +349,25 @@ void neural_learnt::add_ce(const counterexamplet & cex, bool add_random_cex)
     output_examples.push_back(normalise(o_it.second));
   }
 
+  
+
+
   while(output_examples.size()>max_number_io)
   {
-	  debug() << "Number of CEX: "<< input_examples[index].size()
-			  <<", removing counterexamples from beginning\n";
+//	  debug() << "Number of CEX: "<< input_examples[index].size()
+//			  <<", removing counterexamples from beginning\n";
+
 	  for(auto &i: input_examples)
 		  i.erase (i.begin());
+		  
 	  output_examples.erase(output_examples.begin());
+	  counterexamples.erase(counterexamples.begin());
   }
 
-
-  debug() << "Number of inputs/output examples: " << output_examples.size()<<"\n";
-
+ debug() << "Number of counterexamples" << counterexamples.size() <<"\n";
+  for(const auto &i: input_examples)
+    debug() <<"Num input examples " << i.size() <<"\n";
+  debug() << "Number of output examples: " << output_examples.size()<<"\n";
 
   if(add_random_cex)
 	  add_random_ces(cex, 1u);

@@ -8,10 +8,13 @@ incremental_solver_learnt::incremental_solver_learnt(
   const namespacet &_ns,
   const problemt &_problem,
   bool _use_simp_solver,
-  message_handlert &_message_handler)
-  : solver_learn_baset(_ns, _problem, _message_handler),
+  message_handlert &_message_handler,
+  synth_encoding_factoryt synth_encoding_factory)
+  : solver_learn_baset(
+      _ns, _problem, _message_handler, std::move(synth_encoding_factory)),
     synth_satcheck(new satcheck_no_simplifiert(_message_handler)),
     synth_solver(new bv_pointerst(ns, *synth_satcheck, _message_handler)),
+    synth_encoding(this->synth_encoding_factory()),
     program_size(1u),
     counterexample_counter(0u),
     use_simp_solver(_use_simp_solver)
@@ -28,10 +31,10 @@ void incremental_solver_learnt::init()
       new bv_pointerst(ns, *synth_satcheck, get_message_handler()));
   }
 
-  synth_encoding.program_size = program_size;
-  synth_encoding.enable_bitwise = enable_bitwise;
+  synth_encoding->program_size = program_size;
+  synth_encoding->enable_bitwise = enable_bitwise;
 
-  add_problem(synth_encoding, *synth_solver);
+  add_problem(*synth_encoding, *synth_solver);
   freeze_expression_symbols();
 }
 
@@ -44,8 +47,8 @@ void incremental_solver_learnt::set_program_size(const size_t program_size)
 
   synth_satcheck.reset(new satcheck_minisat_no_simplifiert(get_message_handler()));
   synth_solver.reset(new bv_pointerst(ns, *synth_satcheck, get_message_handler()));
-  synth_encoding = synth_encodingt();
-  synth_encoding.literals = problem.literals;
+  synth_encoding = synth_encoding_factory();
+  synth_encoding->literals = problem.literals;
 
   init();
 
@@ -55,11 +58,11 @@ void incremental_solver_learnt::set_program_size(const size_t program_size)
     std::size_t counter = 0;
      for(const auto &c : counterexamples)
      {
-       synth_encoding.suffix = "$ce" + std::to_string(counter);
-       synth_encoding.constraints.clear();
-       add_counterexample(c, synth_encoding, *synth_solver);
+       synth_encoding->suffix = "$ce" + std::to_string(counter);
+       synth_encoding->constraints.clear();
+       add_counterexample(c, *synth_encoding, *synth_solver);
 
-       add_problem(synth_encoding, *synth_solver);
+       add_problem(*synth_encoding, *synth_solver);
 
        counter++;
      }
@@ -74,7 +77,7 @@ decision_proceduret::resultt incremental_solver_learnt::operator()()
 
 solutiont incremental_solver_learnt::get_solution() const
 {
-  return synth_encoding.get_solution(*synth_solver);
+  return synth_encoding->get_solution(*synth_solver);
 }
 
 void incremental_solver_learnt::add_ce(
@@ -85,12 +88,12 @@ void incremental_solver_learnt::add_ce(
 
   counterexamples.emplace_back(counterexample);
 
-  synth_encoding.constraints.clear();
+  synth_encoding->constraints.clear();
 
-  synth_encoding.suffix = "$ce" + std::to_string(counterexample_counter);
+  synth_encoding->suffix = "$ce" + std::to_string(counterexample_counter);
 
-  add_counterexample(counterexample, synth_encoding, *synth_solver);
-  add_problem(synth_encoding, *synth_solver);
+  add_counterexample(counterexample, *synth_encoding, *synth_solver);
+  add_problem(*synth_encoding, *synth_solver);
 
   freeze_expression_symbols();
   counterexample_counter++;

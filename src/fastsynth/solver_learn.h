@@ -2,6 +2,7 @@
 #define CPROVER_FASTSYNTH_PROP_LEARN_H_
 
 #include "learn.h"
+#include "synth_encoding_factory.h"
 
 class solver_learn_baset:public learnt
 {
@@ -11,6 +12,10 @@ protected:
 
   /// Synthesis problem to solve.
   const problemt &problem;
+
+  /// Instantiates constraint generators to use for learning phase. This makes
+  /// e.g. the instruction set to use configurable.
+  const synth_encoding_factoryt synth_encoding_factory;
 
   /// Addds an additional counterexample to the constraint.
   /// \param ce Counterexample to insert.
@@ -31,10 +36,12 @@ protected:
   /// \param ns \see ns solver_learnt::ns
   /// \param problem \see solver_learnt::problem
   /// \param msg \see msg solver_learnt::msg
+  /// \param synth_encoding_factory \see prop_learnt::synth_encoding_factory
   solver_learn_baset(
     const namespacet &,
     const problemt &,
-    message_handlert &);
+    message_handlert &,
+    synth_encoding_factoryt synth_encoding_factory);
 };
 
 /// Default learner implementation. Generates a constraint using synth_encodingt
@@ -52,13 +59,17 @@ class solver_learnt:public solver_learn_baset
 
 public:
   /// Creates a non-incremental learner.
-  /// \param msg \see msg solver_learnt::msg
-  /// \param ns \see ns solver_learnt::ns
-  /// \param problem \see solver_learnt::problem
+  /// \param ns \see ns solver_learn_baset::ns
+  /// \param problem \see solver_learn_baset::problem
+  /// \param msg \see messaget::messaget(message_handlert &)
+  /// \param synth_encoding_factory
+  ///   \see prop_learn_baset::synth_encoding_factory
   solver_learnt(
     const namespacet &,
     const problemt &,
-    message_handlert &);
+    message_handlert &,
+    synth_encoding_factoryt synth_encoding_factory =
+      default_synth_encoding_factory());
 
   bool use_smt;
   std::string logic;

@@ -11,8 +11,12 @@
 solver_learn_baset::solver_learn_baset(
   const namespacet &_ns,
   const problemt &_problem,
-  message_handlert &_message_handler):
-  learnt(_message_handler), ns(_ns), problem(_problem)
+  message_handlert &_message_handler,
+  synth_encoding_factoryt synth_encoding_factory):
+  learnt(_message_handler),
+  ns(_ns),
+  problem(_problem),
+  synth_encoding_factory(std::move(synth_encoding_factory))
 {
 }
 
@@ -60,8 +64,10 @@ void solver_learn_baset::add_problem(
 solver_learnt::solver_learnt(
   const namespacet &_ns,
   const problemt &_problem,
-  message_handlert &_message_handler):
-  solver_learn_baset(_ns, _problem, _message_handler),
+  message_handlert &_message_handler,
+  synth_encoding_factoryt synth_encoding_factory):
+  solver_learn_baset(
+    _ns, _problem, _message_handler, std::move(synth_encoding_factory)),
   program_size(1u)
 {
 }
@@ -95,28 +101,28 @@ decision_proceduret::resultt solver_learnt::operator()()
 decision_proceduret::resultt solver_learnt::operator()(
   decision_proceduret &solver)
 {
-  synth_encodingt synth_encoding;
-  synth_encoding.program_size = program_size;
-  synth_encoding.enable_bitwise = enable_bitwise;
-  synth_encoding.literals = problem.literals;
+  const std::unique_ptr<synth_encodingt> synth_enc(synth_encoding_factory());
+  synth_enc->program_size = program_size;
+  synth_enc->enable_bitwise = enable_bitwise;
+  synth_enc->literals = problem.literals;
 
   if(counterexamples.empty())
   {
-    synth_encoding.suffix = "$ce";
-    synth_encoding.constraints.clear();
+    synth_enc->suffix = "$ce";
+    synth_enc->constraints.clear();
 
-    add_problem(synth_encoding, solver);
+    add_problem(*synth_enc, solver);
   }
   else
   {
     std::size_t counter = 0;
     for(const auto &c : counterexamples)
     {
-      synth_encoding.suffix = "$ce" + std::to_string(counter);
-      synth_encoding.constraints.clear();
-      add_counterexample(c, synth_encoding, solver);
+      synth_enc->suffix = "$ce" + std::to_string(counter);
+      synth_enc->constraints.clear();
+      add_counterexample(c, *synth_enc, solver);
 
-      add_problem(synth_encoding, solver);
+      add_problem(*synth_enc, solver);
 
       counter++;
     }
@@ -132,7 +138,7 @@ decision_proceduret::resultt solver_learnt::operator()(
     debug() << eom;
     #endif
 
-    last_solution = synth_encoding.get_solution(solver);
+    last_solution = synth_enc->get_solution(solver);
     break;
 
   case decision_proceduret::resultt::D_UNSATISFIABLE:

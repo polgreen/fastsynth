@@ -23,7 +23,7 @@ class incremental_solver_learnt:public solver_learn_baset
   std::unique_ptr<class bv_pointerst> synth_solver;
 
   /// Synthesis learn constraint generator.
-  synth_encodingt synth_encoding;
+  std::unique_ptr<synth_encodingt> synth_encoding;
 
   /// \see learnt::set_program_size(size_t)
   size_t program_size;
@@ -47,11 +47,15 @@ public:
   /// \param ns \see ns incremental_solver_learnt::ns
   /// \param problem \see incremental_solver_learnt::problem
   /// \param use_simp_solver indicates whether to use simplifying solver
+  /// \param synth_encoding_factory
+  ///   \see prop_learn_baset::synth_encoding_factory
   incremental_solver_learnt(
     const namespacet &,
     const problemt &,
     bool use_simp_solver,
-    message_handlert &);
+    message_handlert &,
+    synth_encoding_factoryt synth_encoding_factory =
+      default_synth_encoding_factory());
 
   /// \see learnt::set_program_size(size_t)
   void set_program_size(size_t program_size) override;

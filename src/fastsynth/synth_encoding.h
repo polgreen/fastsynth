@@ -127,9 +127,11 @@ public:
   {
   }
 
-  exprt operator()(const exprt &);
+  virtual ~synth_encodingt() = default;
 
-  solutiont get_solution(const decision_proceduret &) const;
+  virtual exprt operator()(const exprt &);
+
+  virtual solutiont get_solution(const decision_proceduret &) const;
 
   std::string suffix;
   std::size_t program_size;

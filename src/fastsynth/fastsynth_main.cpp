@@ -28,6 +28,7 @@
    "(generate-N-programs-old):" \
    "(number-of-params):" \
    "(beam-size):" \
+   "(help)" \
 
 void help(std::ostream &out)
 {
@@ -85,6 +86,7 @@ int main(int argc, const char *argv[])
   if(cmdline.parse(argc, argv, FASTSYNTH_OPTIONS))
   {
     std::cerr << "Usage error\n";
+    help(std::cerr);
     return 1;
   }
 

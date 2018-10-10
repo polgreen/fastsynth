@@ -315,7 +315,19 @@ void neural_learnt::add_random_ces(const counterexamplet &c, std::size_t n)
 
 void neural_learnt::add_ce(const counterexamplet & cex)
 {
-	add_ce(cex, true);
+	bool is_new_cex=true;
+	for(const auto &old_cex: counterexamples)
+	{
+	  if(old_cex.assignment==cex.assignment)
+	  {
+	    is_new_cex=false;
+	    break;
+	  }
+	}
+	if(is_new_cex)
+	  add_ce(cex, false);
+	else
+	  add_random_ces(cex, 1);
 }
 
 

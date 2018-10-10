@@ -308,6 +308,9 @@ void neural_learnt::add_random_ces(const counterexamplet &c, std::size_t n)
     }
     add_ce(random_cex, false);
   }
+  std::uniform_int_distribution<unsigned int>dis2(
+      0, std::numeric_limits<char32_t>::max());
+  seed = dis2(gen);
 }
 
 void neural_learnt::add_ce(const counterexamplet & cex)

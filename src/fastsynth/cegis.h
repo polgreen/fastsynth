@@ -18,6 +18,7 @@ class cegist:public messaget
 public:
   // constructor
   explicit cegist(const namespacet &_ns):
+    min_program_size(1),
     max_program_size(0),
     incremental_solving(false),
     use_simp_solver(false),
@@ -33,6 +34,7 @@ public:
 
   decision_proceduret::resultt operator()(const problemt &);
 
+  std::size_t min_program_size;
   std::size_t max_program_size;
   bool incremental_solving;
   bool use_simp_solver;

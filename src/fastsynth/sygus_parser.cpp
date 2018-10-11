@@ -674,6 +674,14 @@ exprt sygus_parsert::expression()
       else if(id=="ite")
       {
         if_exprt result;
+
+        if(op.size()!=3)
+        {
+          error() << "expected 3 arguments for ite" << eom;
+          ignore_command();
+          return nil_exprt();
+        }
+
         result.operands()=op;
         fix_ite_operation_result_type(result);
         return result;

@@ -18,7 +18,4 @@
 int generate_programs(const cmdlinet &cmdline, std::size_t N);
 void assemble_program(const cmdlinet &cmdline);
 
-
-
-
 #endif /* CPROVER_FASTSYNTH_PROGRAM_GENERATOR_FRONTEND_H */

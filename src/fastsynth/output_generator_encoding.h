@@ -5,12 +5,11 @@
  *      Author: elipol
  */
 
-#ifndef CPROVER_OUTPUT_GENERATOR_ENCODING_H_
-#define CPROVER_OUTPUT_GENERATOR_ENCODING_H_
+#ifndef CPROVER_FASTSYNTH_OUTPUT_GENERATOR_ENCODING_H
+#define CPROVER_FASTSYNTH_OUTPUT_GENERATOR_ENCODING_H
 
-#include <util/std_expr.h>
 #include <util/decision_procedure.h>
-
+#include <util/std_expr.h>
 
 #include "cegis_types.h"
 
@@ -23,13 +22,12 @@ public:
 
   exprt operator()(const exprt &);
 
-  std::vector<exprt>function_outputs;
+  std::vector<exprt> function_outputs;
 
   counterexamplet get_output_example(const decision_proceduret &solver) const;
 
-  using constraintst=std::list<exprt>;
+  using constraintst = std::list<exprt>;
   constraintst constraints;
 };
 
-#endif /* CPROVER_OUTPUT_GENERATOR_ENCODING_H_ */
-
+#endif /* CPROVER_FASTSYNTH_OUTPUT_GENERATOR_ENCODING_H */

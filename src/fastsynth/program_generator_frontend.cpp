@@ -284,6 +284,10 @@ void assemble_program(const cmdlinet &cmdline)
 
   program_generatort generator(
       seed, program_size , number_of_constants, number_of_params);
+
+  generator.bool_return = cmdline.isset("bool-return");
+
+
   generator.assemble_programs(number_of_programs);
 }
 

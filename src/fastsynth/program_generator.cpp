@@ -471,7 +471,7 @@ void program_generatort::assemble_programs(std::size_t number_of_programs)
     }
     else
     {
-      while(instruction_length < program_size)
+      while(instruction_length < program_size - 1)
       {
         instructiont ins;
         if(bitvec_operands.size() == 1)
@@ -501,6 +501,13 @@ void program_generatort::assemble_programs(std::size_t number_of_programs)
         program.push_back(ins);
         bitvec_operands.push_back(ins);
         instruction_length = ins.length;
+      }
+      if(bool_return)
+      {
+      // add boolean instruction to end
+        instructiont final_ins = get_random_instruction(
+           operator_typet::BOOL_RETURN, true, true);
+        program.push_back(final_ins);
       }
 
       for(const auto &prog : prev_programs)

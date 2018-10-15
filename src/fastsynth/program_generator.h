@@ -22,6 +22,7 @@ public:
       std::size_t _program_size,
       std::size_t _num_constants,
       std::size_t _num_params):
+      bool_return(false),
       gen(seed),
       program_size(_program_size),
       num_constants(_num_constants),
@@ -35,7 +36,7 @@ public:
   }
 
   void assemble_programs(std::size_t n);
-
+  bool bool_return;
 protected:
 
   struct operationt

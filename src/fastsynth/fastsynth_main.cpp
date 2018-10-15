@@ -1,35 +1,35 @@
 #include <iostream>
 
-#include <util/suffix.h>
 #include <util/cmdline.h>
+#include <util/suffix.h>
 
 #include "c_frontend.h"
 #include "program_generator_frontend.h"
-#include "sygus_frontend.h"
 #include "smt2_frontend.h"
-#include "iostream"
+#include "sygus_frontend.h"
 
-#define FASTSYNTH_OPTIONS \
-   "(max-program-size):" \
-   "(incremental)" \
-   "(simplifying-solver)" \
-   "(fm)" \
-   "(no-bitwise)" \
-   "(verbosity):" \
-   "(smt)" \
-   "(literals)" \
-   "(enable-division)" \
-   "(generate-N-programs):" \
-   "(program-size):" \
-   "(bool-return)" \
-   "(enumerative-solver)" \
-   "(number-of-constants):" \
-   "(seed):" \
-   "(neural-network)" \
-   "(generate-N-programs-old):" \
-   "(number-of-params):" \
-   "(beam-size):" \
-   "(help)" \
+#define FASTSYNTH_OPTIONS                                                      \
+  "(max-program-size):"                                                        \
+  "(incremental)"                                                              \
+  "(simplifying-solver)"                                                       \
+  "(fm)"                                                                       \
+  "(no-bitwise)"                                                               \
+  "(verbosity):"                                                               \
+  "(smt)"                                                                      \
+  "(literals)"                                                                 \
+  "(enable-division)"                                                          \
+  "(generate-N-programs):"                                                     \
+  "(program-size):"                                                            \
+  "(bool-return)"                                                              \
+  "(use-mult-and-divide)"                                                      \
+  "(enumerative-solver)"                                                       \
+  "(number-of-constants):"                                                     \
+  "(seed):"                                                                    \
+  "(neural-network)"                                                           \
+  "(generate-N-programs-old):"                                                 \
+  "(number-of-params):"                                                        \
+  "(beam-size):"                                                               \
+  "(help)"
 
 void help(std::ostream &out)
 {
@@ -38,7 +38,7 @@ void help(std::ostream &out)
      "\n"
      "* *                       Fastsynth                          * *\n "
      "* *         CounterExample Guided Inductive Synthesis        * *\n ";
-   out  <<
+  out  <<
      "* *              Daniel Kroening, Pascal Kesseli             * *\n"
      "* *           Elizabeth Polgreen, Cristina David             * *\n"
      "* *      Oxford University, Computer Science Department      * *\n"
@@ -76,11 +76,10 @@ void help(std::ostream &out)
      "--program-size N                   size of programs to be generated\n"
      "--number-params N                  number of arguments accepted by the programs to be generated\n"// NOLINT(*)
      "--number-of-constants N            max number of constants per program\n"// NOLINT(*)
-     "--bool-return                      generate programs that return a boolean\n\n";// NOLINT(*)
-    // clang-format on
+     "--bool-return                      generate programs that return a boolean\n"// NOLINT(*)
+     "--use-mult-and-divide              generate programs that include multiplication and division \n";// NOLINT(*)
+  // clang-format on
 }
-
-
 
 int main(int argc, const char *argv[])
 {
@@ -98,27 +97,27 @@ int main(int argc, const char *argv[])
     return 0;
   }
 
-  if(cmdline.args.size()!=1)
+  if(cmdline.args.size() != 1)
   {
     std::cerr << "Usage error, file must be given\n";
     help(std::cerr);
     return 1;
   }
 
-  if(cmdline.isset("help")||cmdline.isset("h")||cmdline.isset("?"))
+  if(cmdline.isset("help") || cmdline.isset("h") || cmdline.isset("?"))
     help(std::cout);
 
   if(cmdline.isset("generate-N-programs-old"))
   {
     if(has_suffix(cmdline.args.back(), ".sl"))
     {
-      std::cout<<"Generating random programs \n";
-      generate_programs(cmdline, std::stol(
-          cmdline.get_value("generate-N-programs-old")));
+      std::cout << "Generating random programs \n";
+      generate_programs(
+        cmdline, std::stol(cmdline.get_value("generate-N-programs-old")));
       return 0;
-      }
-     else
-      std::cerr<<"Error: generate programs must be given .sl file\n";
+    }
+    else
+      std::cerr << "Error: generate programs must be given .sl file\n";
     return 1;
   }
 
@@ -140,4 +139,3 @@ int main(int argc, const char *argv[])
     std::cerr << "Error: " << s << '\n';
   }
 }
-

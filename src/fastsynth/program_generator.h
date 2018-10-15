@@ -21,9 +21,11 @@ public:
     std::size_t _program_size,
     std::size_t _num_constants,
     std::size_t _num_params,
-    bool _use_mul_and_divide)
+    bool _use_mul_and_divide,
+    bool _use_zero_and_one)
     : bool_return(false),
       use_mult_and_divide(_use_mul_and_divide),
+      use_zero_and_one(_use_zero_and_one),
       gen(seed),
       program_size(_program_size),
       num_constants(_num_constants),
@@ -39,6 +41,7 @@ public:
   void assemble_programs(std::size_t n);
   bool bool_return;
   bool use_mult_and_divide;
+  bool use_zero_and_one;
 
 protected:
   struct operationt

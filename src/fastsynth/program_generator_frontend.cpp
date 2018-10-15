@@ -272,9 +272,9 @@ void assemble_program(const cmdlinet &cmdline)
     program_size,
     number_of_constants,
     number_of_params,
-    cmdline.isset("use-mult-and-divide"));
+    cmdline.isset("use-mult-and-divide"),
+    cmdline.isset("use-zero-and-one"));
 
   generator.bool_return = cmdline.isset("bool-return");
-
   generator.assemble_programs(number_of_programs);
 }

@@ -77,7 +77,7 @@ void help(std::ostream &out)
      "--program-size N                   size of programs to be generated\n"
      "--number-of-params N               number of arguments accepted by the programs to be generated\n"// NOLINT(*)
      "--number-of-constants N            max number of constants per program\n"// NOLINT(*)
-     "--use-zero-and-one                 use zero and one\n"// NOLINT(*)
+     "--use-zero-and-one                 use zero and one as constants in the programs \n"// NOLINT(*)
      "--bool-return                      generate programs that return a boolean\n"// NOLINT(*)
      "--use-mult-and-divide              generate programs that include multiplication and division \n";// NOLINT(*)
   // clang-format on

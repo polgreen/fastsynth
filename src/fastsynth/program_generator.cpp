@@ -149,12 +149,12 @@ bool program_generatort::discard_operands(
     }
   }
 
-  // don't and a variable with itself (unless it has been shifted or subtracted
-  // or added) //NOLINT don't xor a variable with itself (unless it has been
-  // shifted or subtracted or added) //NOLINT don't or a variable with itself
-  // (unless it has been shifted or subtracted or added) //NOLINT
+  // don't and, xor, or, mul or div a variable with itself (unless it has been
+  // shifted or subtracted or added)
 
-  if(op.name == "bvand" || op.name == "bvxor" || op.name == "bvor")
+  if(
+    op.name == "bvand" || op.name == "bvxor" || op.name == "bvor" ||
+    op.name == "bvmul" || op.name == "bvudiv")
   {
     for(std::size_t i = 0; i < num_params; i++)
     {

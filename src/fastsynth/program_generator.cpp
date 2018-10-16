@@ -252,12 +252,13 @@ void program_generatort::initialise_operations()
   if(use_zero_and_one)
   {
     instructiont ins0, ins1;
-    ins0.string = "0";
+    ins0.string = "#x00000000";
     ins0.contains_if = false;
-    ins1.string = "1";
+    ins1.string = "#x00000001";
     ins1.contains_if = false;
     bitvec_operands.push_back(ins0);
     bitvec_operands.push_back(ins1);
+    num_constants = num_constants+2;
   }
 
   for(std::size_t i = 0; i < num_params; i++)

@@ -314,6 +314,24 @@ program_generatort::get_ite_operands(program_generatort::operationt &op)
   return res;
 }
 
+// we only use bvneg on parameters.
+program_generatort::instructiont program_generatort::get_bvneg_operands(
+    program_generatort::operationt &op)
+{
+  // replace op2
+  std::uniform_int_distribution<unsigned int> param(0, num_params - 1);
+
+  instructiont res;
+  res.contains_if = false;
+  res.string = " (bvneg ";
+  res.length = 1;
+  std::size_t index = param(gen);
+  res.string += " |synth::parameter" + std::to_string(index) + "|";
+  res.length += 1;
+  res.string += " )";
+  return res;
+}
+
 program_generatort::instructiont program_generatort::get_binary_bitvec_operands(
   program_generatort::operationt &op)
 {

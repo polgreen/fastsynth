@@ -87,6 +87,7 @@ protected:
   instructiont get_binary_bool_operands(operationt &op);
   instructiont get_ite_operands(operationt &op);
   instructiont get_binary_bitvec_operands(operationt &op);
+  instructiont get_bvneg_operands(program_generatort::operationt &op);
   bool discard_operands(
     instructiont &operand1,
     std::size_t &op1_idx,

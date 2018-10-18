@@ -111,8 +111,10 @@ protected:
 
   void add_ce(const counterexamplet & cex, bool add_random_cex);
 
-  /// normalise the value of an expr to a double between -1 and 1
-  /// and return a string to append to the commands
+  /// if the expression is an integer, normalises the value of the
+  /// integer to a double between -1 and 1
+  /// and return a string to append to the commands. Else
+  /// returns the result of from_expr(ns,"",expr).
   /// \param N expr value to be normalised
   /// \return string with value between -1 and 1
   std::string normalise(const exprt &expr);

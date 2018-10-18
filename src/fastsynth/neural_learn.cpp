@@ -169,9 +169,15 @@ solutiont neural_learnt::dummy_program()
     problem.synth_fun_set.begin()->first,
     problem.synth_fun_set.begin()->second);
   function_symbol.set_identifier(
-      "synth_fun::"+id2string(function_symbol.get_identifier()));
-
-  result.functions[function_symbol] =
+    "synth_fun::" + id2string(function_symbol.get_identifier()));
+  if(problem.synth_fun_set.begin()->second.codomain().id() == ID_bool)
+  {
+    result.functions[function_symbol] = true_exprt();
+  }
+  else if(
+    problem.synth_fun_set.begin()->second.codomain().id() == ID_unsignedbv)
+  {
+    result.functions[function_symbol] =
       from_integer(dummy_program_return_constant, unsignedbv_typet(32));
 
     dummy_program_return_constant += 10;
@@ -276,18 +282,21 @@ solutiont neural_learnt::get_solution() const
 }
 
 
-
 std::string neural_learnt::normalise(const exprt &expr)
 {
-  std::string result;
-  std::stringstream convert;
-  unsigned int value = stol(from_expr(ns, "", expr));
-  double normalised = (static_cast<double>(value)/(2147483648)) - 1;
-  convert << std::setprecision(32)<<normalised;
-  POSTCONDITION(normalised <= 1 && normalised >= -1);
-  return convert.str();
+  if(expr.type().id() == ID_unsignedbv)
+  {
+    std::string result;
+    std::stringstream convert;
+    unsigned int value = stol(from_expr(ns, "", expr));
+    double normalised = (static_cast<double>(value) / (2147483648)) - 1;
+    convert << std::setprecision(32) << normalised;
+    POSTCONDITION(normalised <= 1 && normalised >= -1);
+    return convert.str();
+  }
+  else
+    return from_expr(ns, "", expr);
 }
-
 
 void neural_learnt::add_random_ces(const counterexamplet &c, std::size_t n)
 {

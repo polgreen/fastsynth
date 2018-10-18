@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "verify.h"
 #include <fastsynth/solver_learn.h>
 #include <util/message.h>
 #include <solvers/flattening/bv_pointers.h>
@@ -23,7 +24,7 @@ class neural_learnt : public solver_learn_baset
 public:
   /// Creates an interface to the neural network learner.
   /// For every counterexample input, uses a SAT solver to get
-  // a corresponding output. Constructs a command of input/output examples
+  /// a corresponding output. Constructs a command of input/output examples
   /// to send to neural network and parses the output
   /// currently hard-coded to use beam size of 1
   /// \param msg \see msg solver_learnt::msg

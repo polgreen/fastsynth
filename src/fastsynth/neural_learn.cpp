@@ -226,6 +226,8 @@ decision_proceduret::resultt neural_learnt::operator()()
   for(const auto &par : problem.synth_fun_set.begin()->second.domain())
     command += " " + id2string(par.get_identifier());
   command += "\" ";
+  if(problem.synth_fun_set.begin()->second.codomain().id() == ID_bool)
+    command += " -booleanFct t ";
   command += std::to_string(beam_size) + " "; // number of programs to output
 
   debug() << "Number of inputs: " << input_examples.size() << "\n";

@@ -873,6 +873,7 @@ void sygus_parsert::command(const std::string &c)
   }
   else if(c=="synth-fun" || c=="synth-inv")
   {
+    bool inv = (c=="synth-inv");
     if(next_token()!=SYMBOL)
     {
       error() << "expected a symbol after synth-fun" << eom;
@@ -889,7 +890,7 @@ void sygus_parsert::command(const std::string &c)
       return;
     }
 
-    auto signature=(id=="inv-f")?
+    auto signature=(inv)?
         inv_function_signature() : function_signature();
 
     NTDef_seq();
@@ -1087,7 +1088,7 @@ void sygus_parsert::generate_invariant_constraints()
   function_application_exprt trans_f =
     apply_function_to_variables(TRANS, UNPRIMED);
 
-  //post-condition function application
+  // post-condition function application
   function_application_exprt post_f =
     apply_function_to_variables(POST, UNPRIMED);
 

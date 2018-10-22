@@ -6,6 +6,8 @@
  */
 
 #define LOOPLIMIT 10000
+#define ZERO "#x00000000"
+#define ONE "#x00000001"
 
 #include "program_generator.h"
 #include <string>
@@ -70,14 +72,14 @@ bool program_generatort::discard_operands(
   if(op.name == "bvshl" || op.name == "bvlshr")
   {
     // we don't shift a constant
-    if(op1_idx < num_constants)
+    if(op1_idx < (num_constants + (use_zero_and_one?2:0)))
       return true;
 
-    if(op2_idx >= num_constants + num_params)
+    if(op2_idx >= (num_constants + num_params + (use_zero_and_one?2:0)))
     {
       // replace op2
       std::uniform_int_distribution<unsigned int> param_or_const(
-        0, num_params + num_constants - 1);
+        0, num_params + num_constants + (use_zero_and_one?2:0) - 1);
 
       std::size_t index = op1_idx;
       std::size_t loop_iter = 0;
@@ -90,18 +92,7 @@ bool program_generatort::discard_operands(
         index = param_or_const(gen);
         if(index != op1_idx)
         {
-          if(index < num_params)
-            operand2.string =
-              " |synth::parameter" + std::to_string(index) + "|";
-          else
-          {
-            PRECONDITION(
-              index - num_params >= 0 && index - num_params < num_constants);
-            operand2.string =
-              " |constant_value" + std::to_string(index - num_params) + "|";
-          }
-          operand2.length = 1;
-          operand2.contains_if = false;
+          operand2 = bitvec_operands[index];
         }
       }
     }
@@ -116,6 +107,18 @@ bool program_generatort::discard_operands(
   // the same parameter, unless that statement is a nonlinear expression
   if(op.name == "bvsub")
   {
+    // don't subtract 0
+    if(operand2.string.find(ZERO)!=std::string::npos)
+      return true;
+
+    if(
+      operand1.string.find(ONE) != std::string::npos &&
+      is_linear(operand1.string))
+      if(
+        operand2.string.find(ONE) != std::string::npos &&
+        is_linear(operand2.string))
+        return true;
+
     for(std::size_t i = 0; i < num_params; i++)
     {
       if(
@@ -133,6 +136,7 @@ bool program_generatort::discard_operands(
       }
     }
 
+
     for(std::size_t i = 0; i < num_constants; i++)
     {
       if(
@@ -149,12 +153,25 @@ bool program_generatort::discard_operands(
     }
   }
 
-  // don't and, xor, or, mul or div a variable with itself (unless it has been
+  // don't and, xor, or, mul with zero
+  if(
+    op.name == "bvand" || op.name == "bvxor" || op.name == "bvor" ||
+    op.name == "bvmul")
+    if(operand2.string==ZERO || operand1.string==ZERO)
+      return true;
+
+  if( op.name == "bvmul" )
+    if(operand2.string==ONE || operand1.string==ONE)
+      return true;
+
+
+
+  // don't and, xor, or, or div a variable with itself (unless it has been
   // shifted or subtracted or added)
 
   if(
-    op.name == "bvand" || op.name == "bvxor" || op.name == "bvor" ||
-    op.name == "bvmul" || op.name == "bvudiv")
+    op.name == "bvand" || op.name == "bvxor" || op.name == "bvor"
+        || op.name == "bvudiv")
   {
     for(std::size_t i = 0; i < num_params; i++)
     {
@@ -252,13 +269,12 @@ void program_generatort::initialise_operations()
   if(use_zero_and_one)
   {
     instructiont ins0, ins1;
-    ins0.string = "#x00000000";
+    ins0.string = ZERO;
     ins0.contains_if = false;
-    ins1.string = "#x00000001";
+    ins1.string = ONE;
     ins1.contains_if = false;
     bitvec_operands.push_back(ins0);
     bitvec_operands.push_back(ins1);
-    num_constants = num_constants+2;
   }
 
   for(std::size_t i = 0; i < num_params; i++)
@@ -506,7 +522,7 @@ void program_generatort::assemble_programs(std::size_t number_of_programs)
     if(program_size == 1)
     {
       std::uniform_int_distribution<unsigned int> param_or_const(
-        0, num_params + num_constants - 1);
+        0, num_params + num_constants + (use_zero_and_one?2:0) - 1);
 
       instructiont ins = bitvec_operands[param_or_const(gen)];
       program.push_back(ins);

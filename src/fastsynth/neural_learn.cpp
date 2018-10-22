@@ -245,10 +245,10 @@ decision_proceduret::resultt neural_learnt::operator()()
   command += "]]\" ";
 
   // outputs
-  command += "\"[[[";
+  command += "\"[";
   for(const auto &o : output_examples)
     command += o + " ";
-  command += "]]]\"";
+  command += "]\"";
 
   command += " > ";
   command += tmp_results_filename;

@@ -22,9 +22,10 @@ public:
 
   exprt operator()(const exprt &);
 
-  std::vector<exprt> function_outputs;
+  std::map<function_application_exprt, exprt> function_output_map;
 
-  counterexamplet get_output_example(const decision_proceduret &solver) const;
+  std::vector<std::pair<counterexamplet, counterexamplet>>
+  get_output_example(const decision_proceduret &solver) const;
 
   using constraintst = std::list<exprt>;
   constraintst constraints;

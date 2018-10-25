@@ -47,7 +47,7 @@ void neural_learnt::reset_output_generator()
   generator_satcheck.reset(new satcheckt());
   output_generator.reset(new bv_pointerst(ns, *generator_satcheck));
   encoding.constraints.clear();
-  encoding.function_outputs.clear();
+  encoding.function_output_map.clear();
   construct_output_generator();
 }
 
@@ -344,34 +344,41 @@ void neural_learnt::add_ce(const counterexamplet &cex, bool add_random_cex)
 {
   reset_output_generator();
   counterexamples.emplace_back(cex);
-  std::size_t index = 0;
-  // get output example
-  for(const auto &it : cex.assignment)
+
+  // add counterexamples to output generator
+  for(const auto &var : cex.assignment)
   {
-    const exprt &symbol = it.first;
-    const exprt &value = it.second;
-    // add input to command
-
-    if(input_examples.size() <= index)
-      input_examples.push_back({{normalise(value)}});
-    else
-      input_examples[index].push_back(normalise(value));
-    index++;
-
-    // add input to solver
+    const exprt &symbol = var.first;
+    const exprt &value = var.second;
     exprt encoded = encoding(equal_exprt(symbol, value));
     output_generator->set_to_true(encoded);
   }
+
   // get output
   POSTCONDITION(
     output_generator->operator()() != decision_proceduret::resultt::D_ERROR);
 
-  // add output to command;
-  for(const auto &o_it :
-      encoding.get_output_example(*output_generator).assignment)
+  // add outputs and inputs to command;
+  for(const auto &example_pair : encoding.get_output_example(*output_generator))
   {
-    output_examples.push_back(normalise(o_it.second));
+    const counterexamplet &output_cex = example_pair.second;
+    const counterexamplet &input_cex = example_pair.first;
+
+    POSTCONDITION(output_cex.assignment.size() == 1);
+    output_examples.push_back(normalise(output_cex.assignment.begin()->second));
+
+    std::size_t index=0;
+    for(const auto &input_ass : input_cex.assignment)
+    {
+      if(input_examples.size() <= index)
+        input_examples.push_back({{normalise(input_ass.second)}});
+      else
+        input_examples[index].push_back(normalise(input_ass.second));
+
+      index++;
+    }
   }
+
 
   while(output_examples.size() > max_number_io)
   {
@@ -382,8 +389,11 @@ void neural_learnt::add_ce(const counterexamplet &cex, bool add_random_cex)
       i.erase(i.begin());
 
     output_examples.erase(output_examples.begin());
-    counterexamples.erase(counterexamples.begin());
   }
+
+  while(counterexamples.size() >
+        max_number_io * encoding.function_output_map.size())
+    counterexamples.erase(counterexamples.begin());
 
   debug() << "Number of counterexamples" << counterexamples.size() << "\n";
   for(const auto &i : input_examples)

@@ -30,7 +30,7 @@ neural_learnt::neural_learnt(
     generator_satcheck(new satcheckt()),
     output_generator(new bv_pointerst(_ns, *generator_satcheck)),
     pre_verify_batch(true),
-    max_number_io(7u),
+    max_number_io(10u),
     seed(0u),
     tmp_results_filename("tmp"),
     beam_size(_beam_size),

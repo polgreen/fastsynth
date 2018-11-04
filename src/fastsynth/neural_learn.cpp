@@ -217,7 +217,7 @@ decision_proceduret::resultt neural_learnt::operator()()
 
   // construct command line outpute
   command = "python ~/deepsynth/Python/CEGISInterface.py ";
-  command += "-concatenateInputArity t "; // I have no idea what this does
+  command += "-concatenateInputArity f"; // I have no idea what this does
   command += "-inputMode \"normBinary\" -lengthLimit 300 ";
   command += "-aliasing "; // name of function and function arguments
   command += " \"";

@@ -130,7 +130,7 @@ neural_learnt::read_result(std::istream &in, verifyt &verifier)
         std::size_t new_satisfied_inputs =
           verifier(stock_solutions.front(), counterexamples);
         status() << "Solution " << stock_solutions.size() << " satisfied "
-                 << new_satisfied_inputs << " inputs " << eom;
+                 << new_satisfied_inputs << " inputs of " << counterexamples.size()<< eom;
 
         if(new_satisfied_inputs > satisfied_inputs)
         {
@@ -275,7 +275,18 @@ decision_proceduret::resultt neural_learnt::operator()()
   }
 
   std::ifstream in(tmp_results_filename);
-  return read_result(in, verifier);
+  decision_proceduret::resultt final_result =
+      decision_proceduret::resultt::D_ERROR;
+  try
+  {
+    final_result = read_result(in, verifier);
+  }
+  catch(...)
+  {
+    // have another go
+    final_result = read_result(in, verifier);
+  }
+  return final_result;
 }
 
 solutiont neural_learnt::get_solution() const
@@ -358,6 +369,7 @@ void neural_learnt::add_ce(const counterexamplet &cex, bool add_random_cex)
   POSTCONDITION(
     output_generator->operator()() != decision_proceduret::resultt::D_ERROR);
 
+  std::size_t function_calls=0;
   // add outputs and inputs to command;
   for(const auto &example_pair : encoding.get_output_example(*output_generator))
   {
@@ -377,6 +389,7 @@ void neural_learnt::add_ce(const counterexamplet &cex, bool add_random_cex)
 
       index++;
     }
+    function_calls++;
   }
 
 
@@ -391,8 +404,7 @@ void neural_learnt::add_ce(const counterexamplet &cex, bool add_random_cex)
     output_examples.erase(output_examples.begin());
   }
 
-  while(counterexamples.size() >
-        output_examples.size())
+  while(counterexamples.size() > (output_examples.size() / function_calls))
     counterexamples.erase(counterexamples.begin());
 
   debug() << "Number of counterexamples" << counterexamples.size() << "\n";

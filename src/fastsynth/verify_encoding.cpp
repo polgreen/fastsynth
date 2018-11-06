@@ -81,7 +81,7 @@ counterexamplet verify_encodingt::get_counterexample(
     if(value==nil_exprt())
     {
       std::cout << "Warning: unable to find value for "<< var.pretty()<<std::endl;
-      result.assignment[var] = constant_exprt("0", var.type());
+      result.assignment[var] = from_integer(0, var.type());
       std::cout<<"Assume has been simplified out by solver.\n" <<std::endl;
     }
   }

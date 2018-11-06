@@ -6,6 +6,7 @@
  */
 
 #include "output_generator_encoding.h"
+#include <util/arith_tools.h>
 #include <iostream>
 #include <string>
 exprt output_generator_encodingt::operator()(const exprt &expr)
@@ -84,7 +85,8 @@ output_generator_encodingt::get_output_example(
       std::cout << "Warning: unable to find value for "
                 << func_output.second.pretty() << std::endl;
       output_examples.assignment[func_output.second] =
-        constant_exprt("0", func_output.second.type());
+                from_integer(0, func_output.second.type());
+
       std::cout << "Assume has been simplified out by solver.\n" << std::endl;
     }
     for(const auto &arg : func_output.first.arguments())

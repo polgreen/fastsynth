@@ -380,7 +380,9 @@ exprt sygus_parsert::expression()
       const std::size_t width = 4*(buffer.length() - 2);
       CHECK_RETURN(width!=0 && width%4==0);
       for(const auto &c: buffer)
-    	  INVARIANT(c<='f', "invalid hex character");
+      {
+       INVARIANT(isdigit(c) || c=='a' || c=='b' || c=='c' || c=='d' || c=='e' || c=='f' || '#' || 'x', "invalid hex");
+      }	  
       unsignedbv_typet type(width);
       constant_exprt res =from_integer(value, type);
 
@@ -393,7 +395,7 @@ exprt sygus_parsert::expression()
       const std::size_t width = buffer.size() - 2;
       CHECK_RETURN(width!=0 && width%2==0);
       for(const auto &c: buffer)
-    	  INVARIANT(c<=1, "invalid binary character");
+    	  INVARIANT(c=='0' || c=='1' || c== 'b' || c == '#', "invalid binary character");
       unsignedbv_typet type(width);
       return from_integer(value, type);
     }

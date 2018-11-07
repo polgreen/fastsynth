@@ -125,7 +125,7 @@ decision_proceduret::resultt cegist::loop(
       break;
 
     case decision_proceduret::resultt::D_UNSATISFIABLE: // no candidate
-      if(program_size<max_program_size)
+      if(program_size<max_program_size && !standalone_nn)
       {
         program_size+=1;
         status() << "Failed to get candidate; "

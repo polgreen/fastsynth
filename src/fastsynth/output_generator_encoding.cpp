@@ -97,6 +97,5 @@ output_generator_encodingt::get_output_example(
     result.push_back(function_application_cex);
   }
 
-  std::cout << "reached end of output generator \n" << std::flush;
   return result;
 }

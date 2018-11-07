@@ -407,11 +407,6 @@ void neural_learnt::add_ce(const counterexamplet &cex, bool add_random_cex)
   while(counterexamples.size() > (output_examples.size() / function_calls))
     counterexamples.erase(counterexamples.begin());
 
-  debug() << "Number of counterexamples" << counterexamples.size() << "\n";
-  for(const auto &i : input_examples)
-    debug() << "Num input examples " << i.size() << "\n";
-  debug() << "Number of output examples: " << output_examples.size() << "\n";
-
   if(add_random_cex)
     add_random_ces(cex, 1u);
 }

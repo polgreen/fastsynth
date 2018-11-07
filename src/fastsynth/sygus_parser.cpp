@@ -734,7 +734,7 @@ exprt sygus_parsert::expression()
 
   case END_OF_FILE:
     error() << "EOF in an expression" << eom;
-    return nil_exprt();
+    throw "EOF in expression";
 
   default:
     error() << "unexpected token in an expression" << eom;

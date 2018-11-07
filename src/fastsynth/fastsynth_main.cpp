@@ -24,9 +24,10 @@
   "(use-mult-and-divide)"                                                      \
   "(enumerative-solver)"                                                       \
   "(number-of-constants):"                                                     \
-  "(use-zero-and-one)"                                                        \
+  "(use-zero-and-one)"                                                         \
   "(seed):"                                                                    \
   "(neural-network)"                                                           \
+  "(simple)"                                                                   \
   "(generate-N-programs-old):"                                                 \
   "(number-of-params):"                                                        \
   "(beam-size):"                                                               \
@@ -61,6 +62,7 @@ void help(std::ostream &out)
      " --fm                              use fourier motzkin based verification\n\n" // NOLINT(*)
      "Solver options: sygus .sl files only\n"
      " --neural-network                  use neural network for synthesis\n" // NOLINT(*)
+     " --simple                          use simpler neural network\n" // NOLINT(*)
      " --beam-size                       beam size to use with neural network\n" // NOLINT(*)
      " --enumerative-solver              use enumerative solver for synthesis\n"
 

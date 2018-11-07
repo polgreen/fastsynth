@@ -76,6 +76,7 @@ int sygus_frontend(const cmdlinet &cmdline)
   cegis.enable_division=cmdline.isset("enable-division");
   cegis.logic=parser.logic;
   cegis.neural_network=cmdline.isset("neural-network");
+  cegis.simple_nn=cmdline.isset("simple");
 
   // default is 1
   if(cmdline.isset("beam-size"))

@@ -34,7 +34,8 @@ public:
     const namespacet &_ns,
     const problemt &_problem,
     message_handlert &_mh,
-    std::size_t &_beam_size);
+    std::size_t &_beam_size,
+    bool use_simple_network);
 
 protected:
   /// Solver instance.
@@ -48,6 +49,8 @@ protected:
 
   std::vector<counterexamplet> counterexamples;
   solutiont last_solution;
+
+  bool simple_network;
 
   // command to send to neural network, stored in 3 parts
   std::string command;

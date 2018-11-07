@@ -25,10 +25,12 @@ neural_learnt::neural_learnt(
   const namespacet &_ns,
   const problemt &_problem,
   message_handlert &_mh,
-  std::size_t &_beam_size)
+  std::size_t &_beam_size,
+  bool use_simple_network)
   : solver_learn_baset(_ns, _problem, _mh),
     generator_satcheck(new satcheckt()),
     output_generator(new bv_pointerst(_ns, *generator_satcheck)),
+    simple_network(use_simple_network),
     pre_verify_batch(true),
     max_number_io(10u),
     seed(0u),
@@ -217,8 +219,12 @@ decision_proceduret::resultt neural_learnt::operator()()
 
   // construct command line outpute
   command = "python ~/deepsynth/Python/CEGISInterface.py ";
-  command += "-concatenateInputArity f "; // I have no idea what this does
-  command += "-inputMode \"normBinary\" -lengthLimit 300 ";
+  if(!simple_network)
+  {
+    command += "-concatenateInputArity f "; // I have no idea what this does
+    command += "-inputMode \"normBinary\" -lengthLimit 300 ";
+  }
+  
   command += "-aliasing "; // name of function and function arguments
   command += " \"";
   command += id2string(problem.synth_fun_set.begin()->first);
@@ -228,7 +234,8 @@ decision_proceduret::resultt neural_learnt::operator()()
   command += "\" ";
   if(problem.synth_fun_set.begin()->second.codomain().id() == ID_bool)
     command += " -booleanFct t ";
-  command += std::to_string(beam_size) + " "; // number of programs to output
+  if(!simple_network)
+    command += std::to_string(beam_size) + " "; // number of programs to output
 
   debug() << "Number of inputs: " << input_examples.size() << "\n";
   // inputs

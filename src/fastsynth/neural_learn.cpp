@@ -218,12 +218,15 @@ decision_proceduret::resultt neural_learnt::operator()()
   }
 
   // construct command line outpute
-  command = "python ~/deepsynth/Python/CEGISInterface.py ";
+
   if(!simple_network)
   {
+	command = "python ~/deepsynth/Python/CEGISInterface.py ";
     command += "-concatenateInputArity f "; // I have no idea what this does
     command += "-inputMode \"normBinary\" -lengthLimit 300 ";
   }
+  else
+	command = "python ~/deepsynth/Python/CEGISSimpleInterface.py ";
   
   command += "-aliasing "; // name of function and function arguments
   command += " \"";

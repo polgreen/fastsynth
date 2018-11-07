@@ -31,6 +31,7 @@
   "(generate-N-programs-old):"                                                 \
   "(number-of-params):"                                                        \
   "(beam-size):"                                                               \
+  "(neural-network-standalone)"                                                \
   "(help)"
 
 void help(std::ostream &out)
@@ -65,6 +66,7 @@ void help(std::ostream &out)
      " --simple                          use simpler neural network\n" // NOLINT(*)
      " --beam-size                       beam size to use with neural network\n" // NOLINT(*)
      " --enumerative-solver              use enumerative solver for synthesis\n"
+	 " --neural-network-standalone       example guided neural synthesis\n"	 // NOLINT(*)
 
      "\n"
      "Instruction set options:\n"

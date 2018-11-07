@@ -21,6 +21,7 @@ public:
     enumerative_engine(false),
     neural_network(false),
     simple_nn(false),
+	standalone_nn(false),
     incremental_solving(false),
     use_simp_solver(false),
     use_fm(false),
@@ -41,6 +42,7 @@ public:
   bool enumerative_engine;
   bool neural_network;
   bool simple_nn; // simple NN
+  bool standalone_nn;
   bool incremental_solving;
   bool use_simp_solver;
   bool use_fm;

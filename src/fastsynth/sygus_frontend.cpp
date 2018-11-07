@@ -75,10 +75,11 @@ int sygus_frontend(const cmdlinet &cmdline)
   cegis.use_smt=cmdline.isset("smt");
   cegis.enable_division=cmdline.isset("enable-division");
   cegis.logic=parser.logic;
-  cegis.neural_network=cmdline.isset("neural-network");
+  cegis.neural_network=(cmdline.isset("neural-network")||cmdline.isset("neural-network-standalone"));
+  cegis.standalone_nn=cmdline.isset("neural-network-standalone");
   cegis.simple_nn=cmdline.isset("simple");
 
-  // default is 1
+  // default is 1did y
   if(cmdline.isset("beam-size"))
       cegis.beam_size=
         std::stol(cmdline.get_value("beam-size"));

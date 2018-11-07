@@ -26,10 +26,13 @@ neural_learnt::neural_learnt(
   const problemt &_problem,
   message_handlert &_mh,
   std::size_t &_beam_size,
-  bool use_simple_network)
+  bool use_simple_network,
+  bool standalone_testing)
   : solver_learn_baset(_ns, _problem, _mh),
     generator_satcheck(new satcheckt()),
     output_generator(new bv_pointerst(_ns, *generator_satcheck)),
+	network_call_num(0u),
+	single_call(standalone_testing),
     simple_network(use_simple_network),
     pre_verify_batch(true),
     max_number_io(10u),
@@ -210,14 +213,24 @@ decision_proceduret::resultt neural_learnt::operator()()
     last_solution = dummy_program();
     return decision_proceduret::resultt::D_SATISFIABLE;
   }
-  else if(counterexamples.size() < 5u)
+  else if(counterexamples.size() < max_number_io)
   {
     status() << "Only 1 counterexample. Generating "
              << "more random input/output examples\n";
-    add_random_ces(counterexamples.back(), 5u);
+    add_random_ces(counterexamples.back(), max_number_io);
   }
 
-  // construct command line outpute
+  // construct command line output
+  if(single_call && network_call_num==1)
+  {
+	  status() << "Reached network call limit \n";
+	  return decision_proceduret::resultt::D_UNSATISFIABLE;
+  }
+
+
+  status() << "Neural network call "<< network_call_num <<eom;
+  network_call_num++;
+
 
   if(!simple_network)
   {

@@ -35,7 +35,8 @@ public:
     const problemt &_problem,
     message_handlert &_mh,
     std::size_t &_beam_size,
-    bool use_simple_network);
+    bool use_simple_network,
+	bool standalone_testing);
 
 protected:
   /// Solver instance.
@@ -49,6 +50,9 @@ protected:
 
   std::vector<counterexamplet> counterexamples;
   solutiont last_solution;
+  std::size_t network_call_num;
+  // use only one network call
+  bool single_call;
 
   bool simple_network;
 

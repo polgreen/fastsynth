@@ -131,8 +131,10 @@ int main(int argc, const char *argv[])
       return sygus_frontend(cmdline);
     else if(has_suffix(cmdline.args.back(), ".smt2"))
       return smt2_frontend(cmdline);
-    else
+    else if(has_suffix(cmdline.args.back(),".c"))
       return c_frontend(cmdline);
+    else
+      std::cerr<< "Error: unrecognised input file, input files should be either .sl, .smt or .c files\n";
   }
   catch(const char *s)
   {

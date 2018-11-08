@@ -81,10 +81,12 @@ void neural_learnt::construct_output_generator()
 decision_proceduret::resultt
 neural_learnt::read_result(std::istream &in, verifyt &verifier)
 {
+  std::queue<solutiont> network_solutions;
   for(std::size_t i = 0; i < beam_size; i++)
   {
     std::string line;
     std::getline(in, line);
+
     if(line.size() == 0)
     {
       error() << "ERROR: Beam size is " << beam_size << " but only " << i
@@ -113,7 +115,7 @@ neural_learnt::read_result(std::istream &in, verifyt &verifier)
           last_solution.functions[symbol_exprt(f.first, f.second.type)] =
             f.second.body;
         }
-        stock_solutions.push(last_solution);
+        network_solutions.push(last_solution);
       }
     }
     catch(...)
@@ -128,41 +130,46 @@ neural_learnt::read_result(std::istream &in, verifyt &verifier)
   {
     solutiont best_solution_so_far;
     std::size_t satisfied_inputs = 0;
-    while(stock_solutions.size() > 0)
+
+    while(network_solutions.size() > 0)
     {
       try
       {
         std::size_t new_satisfied_inputs =
-          verifier(stock_solutions.front(), counterexamples);
-        status() << "Solution " << stock_solutions.size() << " satisfied "
+          verifier(network_solutions.front(), counterexamples);
+        status() << "Solution " << network_solutions.size() << " satisfied "
                  << new_satisfied_inputs << " inputs of " << counterexamples.size()<< eom;
 
         if(new_satisfied_inputs > satisfied_inputs)
         {
-          best_solution_so_far = stock_solutions.front();
+          best_solution_so_far = network_solutions.front();
           satisfied_inputs = new_satisfied_inputs;
         }
         if(satisfied_inputs == counterexamples.size())
-          std::queue<solutiont>().swap(stock_solutions);
-        else
-          stock_solutions.pop();
+        	stock_solutions.push(network_solutions.front());
+        network_solutions.pop();
       }
       catch(...)
       {
         status() << "Failed to parse; discarding solution "
                  << stock_solutions.size() << eom;
-        stock_solutions.pop();
+        network_solutions.pop();
       }
     }
+
+    status() << "Found " << stock_solutions.size() << " solutions that satisfy all inputs \n";
+    if(satisfied_inputs==counterexamples.size())
+    	stock_solutions.pop();
+
     last_solution = best_solution_so_far;
   }
-  else if(beam_size > 1 && stock_solutions.size() > 0)
+  else if(beam_size > 1 && network_solutions.size() > 0)
   {
     last_solution.functions.clear();
-    last_solution = stock_solutions.front();
+    last_solution = network_solutions.front();
   }
-  if(stock_solutions.size() > 0)
-    stock_solutions.pop();
+ // if(network_solutions.size() > 0)
+   // network_solutions.pop();
   return decision_proceduret::resultt::D_SATISFIABLE;
 }
 

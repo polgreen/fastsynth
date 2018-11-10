@@ -43,8 +43,8 @@ neural_learnt::neural_learnt(
 {
   PRECONDITION(problem.synth_fun_set.size() == 1);
   construct_output_generator();
-  std::random_device rd;
-  seed = rd();
+//  std::random_device rd;
+//  seed = rd();
 }
 
 void neural_learnt::reset_output_generator()

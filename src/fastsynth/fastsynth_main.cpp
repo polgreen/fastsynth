@@ -31,7 +31,10 @@
   "(generate-N-programs-old):"                                                 \
   "(number-of-params):"                                                        \
   "(beam-size):"                                                               \
-  "(neural-network-standalone)"                                                \
+  "(nn-standalone)"                                                            \
+  "(nn-progs-to-store):"                                                        \
+  "(nn-max-num-io):"                                                            \
+  "(nn-num-random-io):"                                                         \
   "(help)"
 
 void help(std::ostream &out)
@@ -66,7 +69,12 @@ void help(std::ostream &out)
      " --simple                          use simpler neural network\n" // NOLINT(*)
      " --beam-size                       beam size to use with neural network\n" // NOLINT(*)
      " --enumerative-solver              use enumerative solver for synthesis\n"
-	 " --neural-network-standalone       example guided neural synthesis\n"	 // NOLINT(*)
+	 " --nn-standalone                   standalone test of NN\n"	 // NOLINT(*)
+	 " --nn-max-num-io                   set max number of i/o examples for network\n"	 // NOLINT(*)
+     " --nn-num-random-io                set number of random i/o examples to initialise network\n"	 // NOLINT(*)
+     " --nn-progs-to-store               set number of programs that satisfy all io to verify \n"	 // NOLINT(*)
+
+
 
      "\n"
      "Instruction set options:\n"

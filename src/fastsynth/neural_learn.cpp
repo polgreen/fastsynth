@@ -31,6 +31,7 @@ neural_learnt::neural_learnt(
   : solver_learn_baset(_ns, _problem, _mh),
     generator_satcheck(new satcheckt()),
     output_generator(new bv_pointerst(_ns, *generator_satcheck)),
+	num_programs_to_store_per_batch(_beam_size),
 	network_call_num(0u),
 	single_call(standalone_testing),
     simple_network(use_simple_network),
@@ -46,6 +47,38 @@ neural_learnt::neural_learnt(
 //  std::random_device rd;
 //  seed = rd();
 }
+
+neural_learnt::neural_learnt(
+  const namespacet &_ns,
+  const problemt &_problem,
+  message_handlert &_mh,
+  std::size_t &_beam_size,
+  bool use_simple_network,
+  bool standalone_testing,
+  std::size_t _num_programs_to_store_per_batch,
+  std::size_t _max_num_io):
+  solver_learn_baset(_ns, _problem, _mh),
+  generator_satcheck(new satcheckt()),
+  output_generator(new bv_pointerst(_ns, *generator_satcheck)),
+  num_programs_to_store_per_batch(_num_programs_to_store_per_batch),
+  network_call_num(0u),
+  single_call(standalone_testing),
+  simple_network(use_simple_network),
+  pre_verify_batch(true),
+  max_number_io(_max_num_io),
+  seed(0u),
+  tmp_results_filename("tmp"),
+  beam_size(_beam_size),
+  dummy_program_return_constant(0)
+{
+	PRECONDITION(problem.synth_fun_set.size() == 1);
+	construct_output_generator();
+//	std::random_device rd;
+//	seed = rd();
+}
+
+
+
 
 void neural_learnt::reset_output_generator()
 {
@@ -100,8 +133,7 @@ neural_learnt::read_result(std::istream &in, verifyt &verifier)
     valuest values;
     std::istringstream str(line);
 
-    try
-    {
+
       sygus_parsert parser(str);
       parser.set_message_handler(get_message_handler());
       parser.parse();
@@ -117,20 +149,15 @@ neural_learnt::read_result(std::istream &in, verifyt &verifier)
         }
         network_solutions.push(last_solution);
       }
-    }
-    catch(...)
-    {
-      // continue if parser has failed
-      warning() << "Network generated a syntactically incorrect program"
-                << " or failed to generate programs" << eom;
-    }
+      else
+    	warning() << "Syntactically incorrect program \n";
   }
 
   if(pre_verify_batch)
   {
     solutiont best_solution_so_far;
     std::size_t satisfied_inputs = 0;
-
+    std::size_t satisfying_programs=0;
     while(network_solutions.size() > 0)
     {
       try
@@ -146,7 +173,13 @@ neural_learnt::read_result(std::istream &in, verifyt &verifier)
           satisfied_inputs = new_satisfied_inputs;
         }
         if(satisfied_inputs == counterexamples.size())
+        {
         	stock_solutions.push(network_solutions.front());
+        	satisfying_programs++;
+        	if(satisfying_programs==num_programs_to_store_per_batch)
+        		std::queue<solutiont>().swap(network_solutions);
+        }
+
         network_solutions.pop();
       }
       catch(...)

@@ -75,11 +75,20 @@ int sygus_frontend(const cmdlinet &cmdline)
   cegis.use_smt=cmdline.isset("smt");
   cegis.enable_division=cmdline.isset("enable-division");
   cegis.logic=parser.logic;
-  cegis.neural_network=(cmdline.isset("neural-network")||cmdline.isset("neural-network-standalone"));
-  cegis.standalone_nn=cmdline.isset("neural-network-standalone");
+  cegis.neural_network=(cmdline.isset("neural-network")||cmdline.isset("nn-standalone"));
+  cegis.standalone_nn=cmdline.isset("nn-standalone");
   cegis.simple_nn=cmdline.isset("simple");
 
-  // default is 1did y
+  if(cmdline.isset("nn-max-num-io"))
+    cegis.max_num_io=std::stol(cmdline.get_value("nn-max-num-io"));
+
+  if(cmdline.isset("nn-num-random-io"))
+    cegis.num_random_io=std::stol(cmdline.get_value("nn-num-random-io"));
+
+  if(cmdline.isset("nn-progs-to-store"))
+    cegis.num_progs_to_store=std::stol(cmdline.get_value("nn-progs-to-store"));
+
+  // default is 1
   if(cmdline.isset("beam-size"))
       cegis.beam_size=
         std::stol(cmdline.get_value("beam-size"));
@@ -97,7 +106,7 @@ int sygus_frontend(const cmdlinet &cmdline)
   for(auto &c : problem.constraints)
     parser.expand_function_applications(c);
 
-  if(cmdline.isset("neural-network"))
+  if(cmdline.isset("neural-network") || cmdline.isset("nn-standalone"))
   {
     for(const auto &f : parser.synth_fun_set)
       problem.synth_fun_set[f] = parser.function_map[f].type;

@@ -18,6 +18,9 @@ public:
   explicit cegist(const namespacet &_ns):
     max_program_size(5u),
     beam_size(1u),
+	num_progs_to_store(1u),
+	max_num_io(10u),
+	num_random_io(10u),
     enumerative_engine(false),
     neural_network(false),
     simple_nn(false),
@@ -39,6 +42,9 @@ public:
 
   std::size_t max_program_size;
   std::size_t beam_size;
+  std::size_t num_progs_to_store;
+  std::size_t max_num_io;
+  std::size_t num_random_io;
   bool enumerative_engine;
   bool neural_network;
   bool simple_nn; // simple NN

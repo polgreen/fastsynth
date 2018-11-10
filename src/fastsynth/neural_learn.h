@@ -38,6 +38,16 @@ public:
     bool use_simple_network,
 	bool standalone_testing);
 
+  neural_learnt(
+    const namespacet &_ns,
+    const problemt &_problem,
+    message_handlert &_mh,
+    std::size_t &_beam_size,
+    bool use_simple_network,
+	bool standalone_testing,
+	std::size_t num_programs_to_store_per_batch,
+	std::size_t max_num_io);
+
 protected:
   /// Solver instance.
   std::unique_ptr<propt> generator_satcheck;
@@ -47,6 +57,7 @@ protected:
   /// Solver used to pre-verify batch
   std::unique_ptr<class bv_pointerst> pre_verifier;
   std::queue<solutiont> stock_solutions;
+  std::size_t num_programs_to_store_per_batch;
 
   std::vector<counterexamplet> counterexamples;
   solutiont last_solution;

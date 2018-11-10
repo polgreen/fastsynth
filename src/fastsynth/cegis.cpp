@@ -49,8 +49,17 @@ decision_proceduret::resultt cegist::operator()(
   else if(neural_network)
   {
     status() << "** neural network learner " << eom;
+
     learner=std::unique_ptr<learnt>(
-        new neural_learnt(ns, problem, get_message_handler(), beam_size, simple_nn, standalone_nn));
+        new neural_learnt(
+        		ns,
+				problem,
+				get_message_handler(),
+				beam_size,
+				simple_nn,
+				standalone_nn,
+				num_progs_to_store,
+				max_num_io));
   }
   else
   {

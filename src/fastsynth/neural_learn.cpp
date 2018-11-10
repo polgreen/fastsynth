@@ -44,8 +44,8 @@ neural_learnt::neural_learnt(
 {
   PRECONDITION(problem.synth_fun_set.size() == 1);
   construct_output_generator();
-//  std::random_device rd;
-//  seed = rd();
+  std::random_device rd;
+  tmp_results_filename = "tmp" + std::to_string(rd());
 }
 
 neural_learnt::neural_learnt(
@@ -73,8 +73,8 @@ neural_learnt::neural_learnt(
 {
 	PRECONDITION(problem.synth_fun_set.size() == 1);
 	construct_output_generator();
-//	std::random_device rd;
-//	seed = rd();
+	std::random_device rd;
+	tmp_results_filename = "tmp" + std::to_string(rd());
 }
 
 

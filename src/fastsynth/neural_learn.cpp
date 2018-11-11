@@ -179,8 +179,8 @@ neural_learnt::read_result(std::istream &in, verifyt &verifier)
         	if(satisfying_programs==num_programs_to_store_per_batch)
         		std::queue<solutiont>().swap(network_solutions);
         }
-
-        network_solutions.pop();
+        if(network_solutions.size()>0)
+          network_solutions.pop();
       }
       catch(...)
       {

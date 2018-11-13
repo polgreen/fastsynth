@@ -1,6 +1,0 @@
-Traceback (most recent call last):
-  File "/Users/elipol/deepsynth/Python/CEGISInterface.py", line 1, in <module>
-    from NeuralNet import Neural_Network
-  File "/Users/elipol/deepsynth/Python/NeuralNet.py", line 3, in <module>
-    import tensorflow as tf
-ImportError: No module named tensorflow

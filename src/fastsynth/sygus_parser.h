@@ -25,6 +25,7 @@ public:
   enum invariant_constraint_functiont { PRE, INV, TRANS, POST };
 
   exprt::operandst constraints;
+  exprt::operandst output_generator_constraints;
   std::string logic, action;
 
   std::set<irep_idt> synth_fun_set;

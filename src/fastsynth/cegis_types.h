@@ -12,7 +12,7 @@ class problemt
 {
 public:
   std::set<exprt> free_variables;
-  exprt::operandst side_conditions, constraints;
+  exprt::operandst side_conditions, constraints, output_generator_constraints;
   std::set<exprt> literals; /// Constant hints for solver.
 
 

@@ -1110,6 +1110,10 @@ void sygus_parsert::generate_invariant_constraints()
 
   implies_exprt post_condition(inv, post_f);
   constraints.push_back(post_condition);
+
+  output_generator_constraints.push_back(trans_f);
+  output_generator_constraints.push_back(post_f);
+  output_generator_constraints.push_back(pre_f);
 }
 
 void sygus_parsert::NTDef_seq()

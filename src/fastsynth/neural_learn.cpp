@@ -8,12 +8,14 @@
 
 #include <langapi/language_util.h>
 #include <solvers/sat/satcheck.h>
+#include <solvers/smt2/smt2_dec.h>
 #include <solvers/smt2/smt2irep.h>
 #include <util/arith_tools.h>
 #include <util/std_types.h>
 
 #include "neural_learn.h"
 #include "sygus_parser.h"
+#include "solver.h"
 
 #include <fstream>
 #include <iomanip>
@@ -78,8 +80,6 @@ neural_learnt::neural_learnt(
 }
 
 
-
-
 void neural_learnt::reset_output_generator()
 {
   generator_satcheck.reset(new satcheckt());
@@ -98,18 +98,43 @@ void neural_learnt::construct_output_generator()
     output_generator->set_to_true(encoded);
   }
 
-  for(const auto &e : problem.constraints)
+  const exprt encoded=encoding(conjunction(problem.constraints));
+  output_generator->set_to_true(encoded);
+
+}
+
+void neural_learnt::reset_inv_output_generator(std::size_t inv_constraint_index)
+{
+  output_generator.reset(new smt2_dect(ns, "fastsynth", "created by fastsynth",
+                    "BV", smt2_dect::solvert::Z3));
+  encoding.constraints.clear();
+  encoding.function_output_map.clear();
+  construct_inv_output_generator(inv_constraint_index);
+}
+
+void neural_learnt::construct_inv_output_generator(std::size_t inv_constraint_index)
+{
+  PRECONDITION(inv_constraint_index < 3);
+  debug() << "construct output generator for neural network" << eom;
+  for(const auto &e : problem.side_conditions)
   {
     const exprt encoded = encoding(e);
     output_generator->set_to_true(encoded);
   }
 
-  for(const auto &c : encoding.constraints)
-  {
-    output_generator->set_to_true(c);
-    debug() << "ec: " << from_expr(ns, "", c) << eom;
-  }
+  exprt::operandst tmp;
+  for(const auto &c: problem.constraints)
+	  tmp.push_back(c);
+
+  tmp.push_back(problem.output_generator_constraints[inv_constraint_index]);
+  debug()<<"inv constraint " << inv_constraint_index <<" set to true \n";
+
+  const exprt encoded=encoding(conjunction(tmp));
+  output_generator->set_to_true(encoded);
+
 }
+
+
 
 decision_proceduret::resultt
 neural_learnt::read_result(std::istream &in, verifyt &verifier)
@@ -257,7 +282,7 @@ decision_proceduret::resultt neural_learnt::operator()()
   {
     status() << "Only 1 counterexample. Generating "
              << "more random input/output examples\n";
-    add_random_ces(counterexamples.back(), max_number_io);
+    add_random_ces(counterexamples.back());
   }
 
   // construct command line output
@@ -367,20 +392,30 @@ std::string neural_learnt::normalise(const exprt &expr)
     unsigned int value = stol(from_expr(ns, "", expr));
     double normalised = (static_cast<double>(value) / (2147483648)) - 1;
     convert << std::setprecision(32) << normalised;
+    debug() << "Normalised "<< std::to_string(value) << " to " << convert.str() << eom;
     POSTCONDITION(normalised <= 1 && normalised >= -1);
     return convert.str();
   }
   else
+  {
+	debug() <<" no need to normalise "<< expr.pretty()<<eom;
     return from_expr(ns, "", expr);
+  }
 }
 
-void neural_learnt::add_random_ces(const counterexamplet &c, std::size_t n)
+void neural_learnt::add_random_ces(const counterexamplet &c)
 {
   std::mt19937 gen(seed);
   counterexamplet cex = c;
-  for(std::size_t i = 0; i < n; i++)
+  std::size_t i=0;
+  while(output_examples.size() < max_number_io)
   {
+	if(i<max_number_io && problem.output_generator_constraints.size()>0)
+	  reset_inv_output_generator(i%3);
+	else
+	  reset_output_generator();
     counterexamplet random_cex;
+
     for(const auto &it : cex.assignment)
     {
       std::uniform_int_distribution<unsigned int> dis(
@@ -390,33 +425,43 @@ void neural_learnt::add_random_ces(const counterexamplet &c, std::size_t n)
       constant_exprt value(integer2binary(number, 32), unsignedbv_typet(32));
       random_cex.assignment[symbol] = value;
     }
-    add_ce(random_cex, false);
+    if(!is_duplicate_counterexample(random_cex))
+      add_ce(random_cex,
+    		 i<max_number_io && problem.output_generator_constraints.size()>0);
+    i++;
   }
   std::uniform_int_distribution<unsigned int> dis2(
     0, std::numeric_limits<char32_t>::max());
   seed = dis2(gen);
+
 }
+
+
+bool neural_learnt::is_duplicate_counterexample(const counterexamplet &cex) {
+	bool is_new_cex = true;
+	for (const auto &old_cex : counterexamples) {
+		if (old_cex.assignment == cex.assignment) {
+			is_new_cex = false;
+			break;
+		}
+	}
+	return !is_new_cex;
+}
+
 
 void neural_learnt::add_ce(const counterexamplet &cex)
 {
-  bool is_new_cex = true;
-  for(const auto &old_cex : counterexamples)
-  {
-    if(old_cex.assignment == cex.assignment)
-    {
-      is_new_cex = false;
-      break;
-    }
-  }
-  if(is_new_cex)
+  if(!is_duplicate_counterexample(cex))
     add_ce(cex, false);
   else
-    add_random_ces(cex, 1);
+    add_random_ces(cex);
 }
 
 void neural_learnt::add_ce(const counterexamplet &cex, bool add_random_cex)
 {
-  reset_output_generator();
+  if(!add_random_cex)
+    reset_output_generator();
+
   counterexamples.emplace_back(cex);
 
   // add counterexamples to output generator
@@ -425,7 +470,8 @@ void neural_learnt::add_ce(const counterexamplet &cex, bool add_random_cex)
     const exprt &symbol = var.first;
     const exprt &value = var.second;
     exprt encoded = encoding(equal_exprt(symbol, value));
-    output_generator->set_to_true(encoded);
+    if(! add_random_cex)
+      output_generator->set_to_true(encoded);
   }
 
   // get output
@@ -458,8 +504,8 @@ void neural_learnt::add_ce(const counterexamplet &cex, bool add_random_cex)
 
   while(output_examples.size() > max_number_io)
   {
-    // debug() << "Number of CEX: "<< input_examples[index].size()
-    // <<", removing counterexamples from beginning\n";
+    debug() << "Number of CEX: "<< output_examples.size()
+     <<", removing counterexamples from beginning\n";
 
     for(auto &i : input_examples)
       i.erase(i.begin());
@@ -470,6 +516,4 @@ void neural_learnt::add_ce(const counterexamplet &cex, bool add_random_cex)
   while(counterexamples.size() > (output_examples.size() / function_calls))
     counterexamples.erase(counterexamples.begin());
 
-  if(add_random_cex)
-    add_random_ces(cex, 1u);
 }

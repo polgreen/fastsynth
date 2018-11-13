@@ -53,7 +53,7 @@ protected:
   std::unique_ptr<propt> generator_satcheck;
 
   /// Solver used to generate output examples.
-  std::unique_ptr<class bv_pointerst> output_generator;
+  std::unique_ptr<decision_proceduret> output_generator;
   /// Solver used to pre-verify batch
   std::unique_ptr<class bv_pointerst> pre_verifier;
   std::queue<solutiont> stock_solutions;
@@ -86,6 +86,8 @@ protected:
   virtual decision_proceduret::resultt operator()();
   decision_proceduret::resultt operator()(verifyt &verifier);
 
+  bool is_duplicate_counterexample(const counterexamplet &cex);
+
   /// returns a dummy program for use when we don't have enough counterexamples
   /// to make it worth firing up the neural network.
   /// The program returned returns the dummy_program_return_constant. Typically
@@ -100,9 +102,9 @@ protected:
   /// network. Requires a counterexample as input to base the random
   /// input/output examples on (we take the structure of the counterexample
   /// and replace the values with randomly generated values
+  /// Adds counterexamples until num_max_io is reached
   /// \param cex counterexample to base input/output pairs on
-  /// \param n number of input/output pairs to add
-  void add_random_ces(const counterexamplet &cex, std::size_t n);
+  void add_random_ces(const counterexamplet &cex);
 
   /// reads the result from the neural network, writes the solution to
   /// last_solution, and returns SAT if a solution is correctly read in.
@@ -146,10 +148,12 @@ protected:
   /// Sets up the solver used to generate the output examples for each
   /// input counterexample
   void construct_output_generator();
+  void construct_inv_output_generator(std::size_t index);
 
   /// reset the solver used to generate the output examples for each
   /// input counterexample
   void reset_output_generator();
+  void reset_inv_output_generator(std::size_t inv_constraint_index);
 };
 
 #endif /* CPROVER_FASTSYNTH_NEURAL_LEARN_H */

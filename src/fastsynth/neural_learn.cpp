@@ -103,7 +103,8 @@ void neural_learnt::construct_output_generator()
 
 }
 
-void neural_learnt::reset_inv_output_generator(std::size_t inv_constraint_index)
+void neural_learnt::reset_inv_output_generator(
+		output_generator_encodingt::inv_constraintst inv_constraint_index)
 {
   output_generator.reset(new smt2_dect(ns, "fastsynth", "created by fastsynth",
                     "BV", smt2_dect::solvert::Z3));
@@ -112,9 +113,9 @@ void neural_learnt::reset_inv_output_generator(std::size_t inv_constraint_index)
   construct_inv_output_generator(inv_constraint_index);
 }
 
-void neural_learnt::construct_inv_output_generator(std::size_t inv_constraint_index)
+void neural_learnt::construct_inv_output_generator(
+		output_generator_encodingt::inv_constraintst inv_limits)
 {
-  PRECONDITION(inv_constraint_index < 3);
   debug() << "construct output generator for neural network" << eom;
   for(const auto &e : problem.side_conditions)
   {
@@ -126,8 +127,8 @@ void neural_learnt::construct_inv_output_generator(std::size_t inv_constraint_in
   for(const auto &c: problem.constraints)
 	  tmp.push_back(c);
 
-  tmp.push_back(problem.output_generator_constraints[inv_constraint_index]);
-  debug()<<"inv constraint " << inv_constraint_index <<" set to true \n";
+  tmp.push_back(problem.output_generator_constraints[(int)inv_limits]);
+  debug()<<"inv constraint " << inv_limits <<" set to true \n";
 
   const exprt encoded=encoding(conjunction(tmp));
   output_generator->set_to_true(encoded);
@@ -410,8 +411,12 @@ void neural_learnt::add_random_ces(const counterexamplet &c)
   std::size_t i=0;
   while(output_examples.size() < max_number_io)
   {
+	// this currently uses over-approximate example generation, i.e., assumes the invariant is
+	// true when unknown.
+	// TODO: make this code nicer. Add option to use UNKNOWN_ASSUME_FALSE
 	if(i<max_number_io && problem.output_generator_constraints.size()>0)
-	  reset_inv_output_generator(i%3);
+	  reset_inv_output_generator(
+			  static_cast<output_generator_encodingt::inv_constraintst>(i%3));
 	else
 	  reset_output_generator();
     counterexamplet random_cex;

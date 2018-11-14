@@ -1111,9 +1111,17 @@ void sygus_parsert::generate_invariant_constraints()
   implies_exprt post_condition(inv, post_f);
   constraints.push_back(post_condition);
 
-  output_generator_constraints.push_back(trans_f);
-  output_generator_constraints.push_back(post_f);
-  output_generator_constraints.push_back(pre_f);
+  not_exprt not_post(post_f);
+  and_exprt trans_and_not_post(trans_f, not_post);
+  and_exprt trans_and_post(trans_f, post_f);
+  and_exprt over_approximative(trans_and_post, inv);
+  not_exprt not_inv(inv);
+  and_exprt under_approximative(trans_and_post, not_inv);
+  output_generator_constraints.push_back(pre_f); //invariant definitely true
+  output_generator_constraints.push_back(trans_and_not_post); //invariant definitely false
+  output_generator_constraints.push_back(over_approximative); //invariant could be either, assume true
+  output_generator_constraints.push_back(under_approximative); //invariant could be either, assume false
+
 }
 
 void sygus_parsert::NTDef_seq()

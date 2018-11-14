@@ -21,7 +21,7 @@ public:
   }
 
   exprt operator()(const exprt &);
-
+  enum inv_constraintst {DEF_TRUE, DEF_FALSE, UNKNOWN_ASSUME_TRUE, UNKNOWN_ASSUME_FALSE};
   std::map<function_application_exprt, exprt> function_output_map;
 
   std::vector<std::pair<counterexamplet, counterexamplet>>

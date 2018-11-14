@@ -148,12 +148,12 @@ protected:
   /// Sets up the solver used to generate the output examples for each
   /// input counterexample
   void construct_output_generator();
-  void construct_inv_output_generator(std::size_t index);
+  void construct_inv_output_generator(output_generator_encodingt::inv_constraintst inv_constraint_index);
 
   /// reset the solver used to generate the output examples for each
   /// input counterexample
   void reset_output_generator();
-  void reset_inv_output_generator(std::size_t inv_constraint_index);
+  void reset_inv_output_generator(output_generator_encodingt::inv_constraintst inv_constraint_index);
 };
 
 #endif /* CPROVER_FASTSYNTH_NEURAL_LEARN_H */

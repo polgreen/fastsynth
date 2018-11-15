@@ -381,10 +381,24 @@ exprt sygus_parsert::expression()
       CHECK_RETURN(width!=0 && width%4==0);
       for(const auto &c: buffer)
       {
-       INVARIANT(isdigit(c) || c=='a' || c=='b' || c=='c' || c=='d' || c=='e' || c=='f' || '#' || 'x', "invalid hex");
-      }	  
+       if(!(isdigit(c) || c=='a' || c=='b' || c=='c' || c=='d' || c=='e' || c=='f' || '#' || 'x'))
+       {
+         error() << "invalid hex character " << c <<eom;
+         return nil_exprt();
+       }
+      }
+      if(width!=32)
+      {
+        error() << "Width is expected to be 32 from neural network "<<eom;
+        return nil_exprt();
+      }
       unsignedbv_typet type(width);
       constant_exprt res =from_integer(value, type);
+      if(res > 4294967295)
+      {
+        error() << "Number too big for 32 bit integer "<<eom;
+        return nil_exprt();
+      }
 
       return from_integer(value, type);
     }
@@ -443,6 +457,11 @@ exprt sygus_parsert::expression()
         if(result.op0().type().id()!=ID_bool)
         {
           error()<<"not must have boolean operand" <<eom;
+          return nil_exprt();
+        }
+        if(op.size()!=1)
+        {
+          error()<<"not must have a single operand" <<eom;
           return nil_exprt();
         }
         return result;

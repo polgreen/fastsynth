@@ -281,7 +281,7 @@ decision_proceduret::resultt neural_learnt::operator()()
   }
   else if(counterexamples.size() < max_number_io)
   {
-    status() << "Only 1 counterexample. Generating "
+    status() << "Not enough counterexamples. Generating "
              << "more random input/output examples\n";
     add_random_ces(counterexamples.back());
   }
@@ -454,13 +454,68 @@ bool neural_learnt::is_duplicate_counterexample(const counterexamplet &cex) {
 }
 
 
+
+
 void neural_learnt::add_ce(const counterexamplet &cex)
 {
-  if(!is_duplicate_counterexample(cex))
+  bool duplicate = is_duplicate_counterexample(cex);
+
+  if(!duplicate && cex.f_apps.empty())
     add_ce(cex, false);
+  else if(!duplicate && !cex.f_apps.empty()
+      && problem.synth_fun_set.begin()->second.codomain().id() == ID_bool)
+	add_ce_with_outputs(cex);
   else
     add_random_ces(cex);
+
 }
+
+
+void neural_learnt::add_ce_with_outputs(const counterexamplet &cex)
+{
+  counterexamples.emplace_back(cex);
+  std::size_t index=0;
+  std::size_t function_calls = cex.f_apps.size();
+  std::size_t number_of_vars = problem.synth_fun_set.begin()->second.domain().size();
+
+  PRECONDITION(number_of_vars == cex.assignment.size()/function_calls);
+  std::vector<std::string> empty_vector;
+
+  while(input_examples.size()<number_of_vars)
+    input_examples.push_back(empty_vector);
+
+  for(const auto &input_ass : cex.assignment)
+  {
+    if(index==number_of_vars)
+      index=0;
+    input_examples[index].push_back(normalise(input_ass.second));
+    index++;
+  }
+
+  for(const auto & f_app : cex.f_apps)
+  {
+    if(f_app.second==true_exprt())
+      output_examples.push_back(normalise(false_exprt()));
+    else
+      output_examples.push_back(normalise(true_exprt()));
+  }
+
+  while(output_examples.size() > max_number_io)
+    {
+      debug() << "Number of CEX: "<< output_examples.size()
+       <<", removing counterexamples from beginning\n";
+
+      for(auto &i : input_examples)
+        i.erase(i.begin());
+
+      output_examples.erase(output_examples.begin());
+    }
+
+    while(counterexamples.size() > (output_examples.size() / function_calls))
+      counterexamples.erase(counterexamples.begin());
+}
+
+
 
 void neural_learnt::add_ce(const counterexamplet &cex, bool add_random_cex)
 {

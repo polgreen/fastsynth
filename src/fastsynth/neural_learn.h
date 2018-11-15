@@ -105,6 +105,7 @@ protected:
   /// Adds counterexamples until num_max_io is reached
   /// \param cex counterexample to base input/output pairs on
   void add_random_ces(const counterexamplet &cex);
+  void add_ce_with_outputs(const counterexamplet &cex);
 
   /// reads the result from the neural network, writes the solution to
   /// last_solution, and returns SAT if a solution is correctly read in.

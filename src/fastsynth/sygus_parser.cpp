@@ -394,11 +394,7 @@ exprt sygus_parsert::expression()
       }
       unsignedbv_typet type(width);
       constant_exprt res =from_integer(value, type);
-      if(res > 4294967295)
-      {
-        error() << "Number too big for 32 bit integer "<<eom;
-        return nil_exprt();
-      }
+
 
       return from_integer(value, type);
     }

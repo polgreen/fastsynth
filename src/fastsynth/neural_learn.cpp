@@ -492,17 +492,21 @@ void neural_learnt::add_ce_with_outputs(const counterexamplet &cex)
   for(const auto &input_ass : cex.assignment)
   {
     if(index==number_of_vars)
-      index=0;
+      break;
     input_examples[index].push_back(normalise(input_ass.second));
     index++;
   }
 
+  std::size_t function_call_index=0;
   for(const auto & f_app : cex.f_apps)
   {
+    if(function_call_index == function_calls)
+      break;
     if(f_app.second==true_exprt())
       output_examples.push_back(normalise(false_exprt()));
     else
       output_examples.push_back(normalise(true_exprt()));
+    function_call_index++;
   }
 
   while(output_examples.size() > max_number_io)
@@ -516,7 +520,7 @@ void neural_learnt::add_ce_with_outputs(const counterexamplet &cex)
       output_examples.erase(output_examples.begin());
     }
 
-    while(counterexamples.size() > (output_examples.size() / function_calls))
+    while(counterexamples.size() > (output_examples.size()))
       counterexamples.erase(counterexamples.begin());
 }
 

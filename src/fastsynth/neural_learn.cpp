@@ -397,6 +397,11 @@ std::string neural_learnt::normalise(const exprt &expr)
     POSTCONDITION(normalised <= 1 && normalised >= -1);
     return convert.str();
   }
+  else if(expr.type().id()==ID_nil)
+  {
+    debug() <<" Got nil exprt, replacing with 0" <<eom;
+    return "0";
+  }
   else
   {
 	debug() <<" no need to normalise "<< expr.pretty()<<eom;

@@ -279,12 +279,15 @@ decision_proceduret::resultt neural_learnt::operator()()
     last_solution = dummy_program();
     return decision_proceduret::resultt::D_SATISFIABLE;
   }
-  else if(counterexamples.size() < max_number_io)
+  else if(output_examples.size() < max_number_io)
   {
     status() << "Not enough counterexamples. Generating "
              << "more random input/output examples\n";
-    while(counterexamples.size() < max_number_io)
-      add_random_ces(counterexamples.back(), counterexamples.size());
+    while(output_examples.size() < max_number_io-1)
+    {
+      status()<<"Adding another random example, number of counterexamples "<<counterexamples.size()<<" \n";
+      add_random_ces(counterexamples.back(), counterexamples.size()%4);
+    }  
   }
 
   // construct command line output
@@ -419,7 +422,7 @@ void neural_learnt::add_random_ces(
 	// this currently uses over-approximate example generation, i.e., assumes the invariant is
 	// true when unknown.
 	// TODO: make this code nicer. Add option to use UNKNOWN_ASSUME_FALSE
-	if(problem.output_generator_constraints.size()>0)
+	if(problem.output_generator_constraints.size()>0 && index_of_constraint%4!=0)
 	  reset_inv_output_generator(
 			  static_cast<output_generator_encodingt::inv_constraintst>(index_of_constraint));
 	else
@@ -435,7 +438,7 @@ void neural_learnt::add_random_ces(
       constant_exprt value(integer2binary(number, 32), unsignedbv_typet(32));
       random_cex.assignment[symbol] = value;
     }
-    if(!is_duplicate_counterexample(random_cex))
+//    if(!is_duplicate_counterexample(random_cex))
       add_ce(random_cex,
     		 problem.output_generator_constraints.size()>0);
 
@@ -454,6 +457,20 @@ bool neural_learnt::is_duplicate_counterexample(const counterexamplet &cex) {
 			break;
 		}
 	}
+	if(output_examples.size()>5)
+	{
+        std::size_t total_false=0;
+        std::size_t total_true=0;
+        for(const auto &output: output_examples)
+        {
+          if(output == "FALSE")
+            total_false++;
+          if(output == "TRUE")
+            total_true++;
+        }
+        if(total_false==output_examples.size()|| total_true==output_examples.size())
+          is_new_cex=false;
+          }
 	return !is_new_cex;
 }
 
@@ -485,7 +502,7 @@ void neural_learnt::add_ce(const counterexamplet &cex)
   else if(!duplicate && !cex.f_apps.empty()
       && problem.synth_fun_set.begin()->second.codomain().id() == ID_bool)
 	  add_ce_with_outputs(cex);
-  else
+//  else
     add_complementary_cex(cex);
 }
 
@@ -528,17 +545,16 @@ void neural_learnt::add_ce_with_outputs(const counterexamplet &cex)
 
   while(output_examples.size() > max_number_io)
     {
-      debug() << "Number of CEX: "<< output_examples.size()
+      debug() << "Number of CEX: "<< counterexamples.size()
        <<", removing counterexamples from beginning\n";
 
       for(auto &i : input_examples)
         i.erase(i.begin());
 
       output_examples.erase(output_examples.begin());
-    }
-
-    while(counterexamples.size() > (output_examples.size()))
       counterexamples.erase(counterexamples.begin());
+    }
+    debug()<<"CEX: counterexamples size: "<<counterexamples.size();
 }
 
 
@@ -568,6 +584,8 @@ void neural_learnt::add_ce(const counterexamplet &cex, bool add_random_cex)
   // add outputs and inputs to command;
   for(const auto &example_pair : encoding.get_output_example(*output_generator))
   {
+    if(function_calls==1)
+     break;
     const counterexamplet &output_cex = example_pair.second;
     const counterexamplet &input_cex = example_pair.first;
 
@@ -601,5 +619,4 @@ void neural_learnt::add_ce(const counterexamplet &cex, bool add_random_cex)
 
   while(counterexamples.size() > (output_examples.size() / function_calls))
     counterexamples.erase(counterexamples.begin());
-
 }

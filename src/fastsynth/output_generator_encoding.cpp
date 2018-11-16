@@ -88,7 +88,7 @@ output_generator_encodingt::get_output_example(
                 from_integer(0, func_output.second.type());
 
       std::cout << "Assume has been simplified out by solver.\n" << std::endl;
-      std::cout <<"returning "<< from_integer(0, func_output.second.type()).pretty() <<std::endl;
+//      std::cout <<"returning "<< from_integer(0, func_output.second.type()).pretty() <<std::endl;
 
     }
     for(const auto &arg : func_output.first.arguments())

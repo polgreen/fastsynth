@@ -396,7 +396,13 @@ solutiont neural_learnt::get_solution() const
 
 
 std::string neural_learnt::normalise(const exprt &expr)
-{
+{ 
+  if(expr.id()==ID_symbol)
+  {
+   debug() << "cannot normalise symbols, replacing with 0" <<eom;
+   return "0";
+  }
+  debug() << "Normalising "<< expr.pretty() <<eom;
   if(expr.type().id() == ID_unsignedbv)
   {
     std::string result;
@@ -447,8 +453,7 @@ void neural_learnt::add_random_ces(
     }
 //    if(!is_duplicate_counterexample(random_cex))
       add_ce(random_cex,
-    		 problem.output_generator_constraints.size()>0);
-
+    		 problem.output_generator_constraints.size()>0 && index_of_constraint%4!=0);
 
   std::uniform_int_distribution<unsigned int> dis2(
     0, std::numeric_limits<char32_t>::max());

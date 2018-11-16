@@ -13,13 +13,22 @@ class verify_encodingt
 public:
   exprt operator()(const exprt &);
 
-  std::map<symbol_exprt, exprt> functions;
+  using functionst = solutiont::functionst;
+  functionst functions;
   std::set<exprt> free_variables;
 
   std::map<function_application_exprt, exprt> f_apps;
 
   counterexamplet get_counterexample(
     const decision_proceduret &) const;
+
+  // check that the function body uses symbols that
+  // are consistent with the signature of the function
+  static void check_function_body(
+    const mathematical_function_typet &signature,
+    const exprt &body);
+
+  static void check_function_bodies(const functionst &);
 
 protected:
   exprt instantiate(

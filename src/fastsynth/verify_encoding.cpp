@@ -59,7 +59,7 @@ void verify_encodingt::check_function_body(
   }
 }
 
-exprt verify_encodingt::operator()(const exprt &expr) const
+exprt verify_encodingt::operator()(const exprt &expr)
 {
   if(expr.id()==ID_function_application)
   {

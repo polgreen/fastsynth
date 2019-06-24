@@ -3,6 +3,8 @@
 
 #include <fastsynth/synth_encoding.h>
 
+#include <util/message.h>
+
 /// Employs an SMT solver to quickly test whether a solution using constants
 /// above or below certain values are feasible.
 class constant_limitst : public messaget

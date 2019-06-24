@@ -5,6 +5,7 @@
 #include <util/suffix.h>
 
 #include <algorithm>
+#include <iterator>
 
 local_synth_encodingt::local_synth_encodingt(
   const namespacet &ns,
@@ -201,7 +202,7 @@ public:
     const symbol_exprt value(cval(identifier, constant_index++, word_type));
     const exprt solver_value(solver.get(value));
     if(solver_value.is_nil())
-      expr = zero_initializer(word_type, expr.source_location(), ns);
+      expr = *zero_initializer(word_type, expr.source_location(), ns);
     else
       expr = solver.get(value);
   }

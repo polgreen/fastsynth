@@ -8,6 +8,8 @@
 
 #include <util/arith_tools.h>
 
+#include <iterator>
+
 local_cegist::local_cegist(
   const namespacet &ns,
   verifyt &verify,

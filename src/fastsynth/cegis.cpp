@@ -4,6 +4,7 @@
 #include "solver_learn.h"
 #include "verify.h"
 #include "fm_verify.h"
+#include <chrono>
 
 #include <langapi/language_util.h>
 
@@ -83,6 +84,7 @@ decision_proceduret::resultt cegist::loop(
 
   unsigned iteration=0;
 
+
   std::size_t program_size=min_program_size;
 
   // now enter the CEGIS loop
@@ -97,6 +99,7 @@ decision_proceduret::resultt cegist::loop(
 
     iteration++;
     status() << blue << "** CEGIS iteration " << iteration << reset << eom;
+    auto iter_start_time=std::chrono::steady_clock::now();
 
     if(max_iterations && iteration > max_iterations)
       return decision_proceduret::resultt::D_ERROR;
@@ -141,13 +144,23 @@ decision_proceduret::resultt cegist::loop(
     case decision_proceduret::resultt::D_ERROR:
       return decision_proceduret::resultt::D_ERROR;
     }
-
+    status() << "Synthesis time iteration " << iteration <<": "
+             << std::chrono::duration<double>(
+                  std::chrono::steady_clock::now() - iter_start_time)
+                  .count()
+             << 's' << eom;
     status() << "** Verification phase" << eom;
 
     switch(verify(solution))
     {
     case decision_proceduret::resultt::D_SATISFIABLE: // counterexample
       status() << "** Verification failed" << eom;
+      status() << "Total time iteration " << iteration <<": "
+               << std::chrono::duration<double>(
+                    std::chrono::steady_clock::now() - iter_start_time)
+                    .count()
+               << 's' << eom;
+
       learn.add_ce(verify.get_counterexample());
       if(use_local_search)
       {
@@ -159,6 +172,11 @@ decision_proceduret::resultt cegist::loop(
     case decision_proceduret::resultt::D_UNSATISFIABLE: // done, got solution
       status() << "Result obtained with " << iteration << " iteration(s)"
                << eom;
+      status() << "Total time iteration " << iteration <<": "
+               << std::chrono::duration<double>(
+                    std::chrono::steady_clock::now() - iter_start_time)
+                    .count()
+               << 's' << eom;
       result() << bold << "VERIFICATION SUCCESSFUL" << reset << eom;
       return decision_proceduret::resultt::D_SATISFIABLE;
 
